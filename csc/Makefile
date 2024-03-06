@@ -4,3 +4,6 @@ run:
 		mv fibo.o ./code/fibo.o
 		mv main.o ./code/main.o
 		gcc ./code/fibo.o ./code/main.o -o fibo
+
+clean:
+	rm ./code/*.o

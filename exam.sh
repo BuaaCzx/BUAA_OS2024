@@ -12,7 +12,7 @@ gcc -o ./hello ./code/*.o
 ./hello 2> ./err.txt
 mv ./err.txt ../
 cd ..
-chmod 6451 ./err.txt
+chmod u=rw,g-r,o-xr,a-x ./err.txt
 # 110 100 101 001 6451
 n1=1
 n2=1

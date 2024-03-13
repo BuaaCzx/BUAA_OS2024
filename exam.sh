@@ -27,5 +27,6 @@ then
 fi
 n=$[$n1+$n2]
 # cat 111
-sed -n '$np' ./err.txt >&2
+# cat "sed -n '${n}p' ./err.txt"
+sed -n "${n}p" ./err.txt
 

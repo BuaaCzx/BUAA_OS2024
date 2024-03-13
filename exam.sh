@@ -15,12 +15,16 @@ cd ..
 chmod +r,+w,-r,-x,+r,-x ./err.txt
 n1=1
 n2=1
-if $# -eq 1
+if [ $# -eq 1 ]
+then
 	n1=$1
-if $# -eq 2
+fi
+if [ $# -eq 2 ]
+then
 	n1=$1
 	n2=$2
-n=$n1+$n2
+fi
+n=$[$n1+$n2]
 # cat 111
-sed -n '$np' ./err.txt >&2
+sed -n "$np" ./err.txt >&2
 

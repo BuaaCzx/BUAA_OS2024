@@ -12,7 +12,7 @@ gcc -o ./hello ./code/*.o
 ./hello 2> ./err.txt
 mv ./err.txt ../
 cd ..
-chmod +r,+w,-r,-x,+r,-x ./err.txt
+chmod +rw,-r,-xr,-x ./err.txt
 n1=1
 n2=1
 if [ $# -eq 1 ]

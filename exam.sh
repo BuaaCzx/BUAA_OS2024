@@ -12,7 +12,8 @@ gcc -o ./hello ./code/*.o
 ./hello 2> ./err.txt
 mv ./err.txt ../
 cd ..
-chmod +rw,-r,-xr,-x ./err.txt
+chmod 6451 ./err.txt
+# 110 100 101 001 6451
 n1=1
 n2=1
 if [ $# -eq 1 ]

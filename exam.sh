@@ -8,4 +8,7 @@ do
 	gcc -o ./code/$a.o -c ./code/$a.c
 	a=$[$a+1]
 done
+gcc -o ./hello ./code/*.o
+./hello 2> ./err.txt
+mv ./err.txt ../
 

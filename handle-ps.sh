@@ -38,6 +38,7 @@ if $SORT; then
     :
 elif [ ! -z "$CMD" ]; then
     # Your code here. (2/3)
+	grep $CMD $FILE
     :
 elif [ ! -z $PID ]; then
     # Your code here. (3/3)

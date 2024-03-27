@@ -289,7 +289,7 @@ int vscanfmt(scan_callback_t in, void *data, const char *fmt, va_list ap) {
 
 	int *int_ptr;
 	char *char_ptr;
-	char **string_ptr;
+	char *string_ptr;
 
 	while (*fmt) {
 		if (*fmt == '%') {

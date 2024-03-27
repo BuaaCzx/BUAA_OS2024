@@ -81,10 +81,28 @@ void vprintfmt(fmt_callback_t out, void *data, const char *fmt, va_list ap) {
 			z = (x + y) * (x - y);
 			z = z < 0 ? -z : z;
 			print_char(out, data, '(', 0, 0);
+			if (x < 0) {
+				x = -x;
+				neg_flag = 1;
+			} else {
+				neg_flag = 0;
+			}
 			print_num(out, data, x, 10, neg_flag, width, ladjust, padc, 0);
 			print_char(out, data, ',', 0, 0);
+			if (y < 0) {
+				y = -y;
+				neg_flag = 1;
+			} else {
+				neg_flag = 0;
+			}
 			print_num(out, data, y, 10, neg_flag, width, ladjust, padc, 0);
 			print_char(out, data, ',', 0, 0);
+			if (z < 0) {
+				z = -z;
+				neg_flag = 1;
+			} else {
+				neg_flag = 0;
+			}
 			print_num(out, data, z, 10, neg_flag, width, ladjust, padc, 0);
 			print_char(out, data, ')', 0, 0);
 			break;

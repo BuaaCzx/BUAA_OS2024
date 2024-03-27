@@ -40,7 +40,11 @@
 
 void mips_init(u_int argc, char **argv, char **penv, u_int ram_low_size) {
 	printk("init.c:\tmips_init() is called\n");
-
+	
+	int num1, num2, num3;
+char ch;
+scanf("%d %d   %d", &num1, &num2, &num3);
+printk("%d %d %d", num1, num2, num3);
 	// lab2:
 	// mips_detect_memory(ram_low_size);
 	// mips_vm_init();

@@ -316,6 +316,9 @@ int vscanfmt(scan_callback_t in, void *data, const char *fmt, va_list ap) {
 					num = num * 10 + ch - '0';
 					in(data, &ch, 1);
 				}
+				if (neg) {
+					num = -num;
+				}
 				*int_ptr = num;
 
 				break;
@@ -338,6 +341,9 @@ int vscanfmt(scan_callback_t in, void *data, const char *fmt, va_list ap) {
 						num = num * 16 + ch - 'a' + 10;
 					}
 					in(data, &ch, 1);
+				}
+				if (neg) {
+					num = -num;
 				}
 				*int_ptr = num;
 				break;

@@ -67,7 +67,27 @@ void vprintfmt(fmt_callback_t out, void *data, const char *fmt, va_list ap) {
 		/* Exercise 1.4: Your code here. (7/8) */
 		
 		neg_flag = 0;
+		long x, y, z;
 		switch (*fmt) {
+		case 'P':
+			// long x, y, z;
+			if (long_flag) {
+				x = va_arg(ap, long int);
+				y = va_arg(ap, long int);
+			} else {
+				x = va_arg(ap, int);
+				y = va_arg(ap, int);
+			}
+			z = (x + y) * (x - y);
+			z = z < 0 ? -z : z;
+			print_char(out, data, '(', 0, 0);
+			print_num(out, data, x, 10, neg_flag, width, ladjust, padc, 0);
+			print_char(out, data, ',', 0, 0);
+			print_num(out, data, y, 10, neg_flag, width, ladjust, padc, 0);
+			print_char(out, data, ',', 0, 0);
+			print_num(out, data, z, 10, neg_flag, width, ladjust, padc, 0);
+			print_char(out, data, ')', 0, 0);
+			break;
 		case 'b':
 			if (long_flag) {
 				num = va_arg(ap, long int);

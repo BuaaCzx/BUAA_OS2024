@@ -45,6 +45,15 @@ static void passive_alloc(u_int va, Pde *pgdir, u_int asid) {
 /* Overview:
  *  Refill TLB.
  */
+
+/*
+263 Overview:
+264     Look up the Page that virtual address `va` map to.
+265   Post-Condition:
+266     Return a pointer to corresponding Page, and store it's page table entry to *ppte.
+267     If `va` doesn't mapped to any Page, return NULL.
+268 struct Page *page_lookup(Pde *pgdir, u_long va, Pte **ppte)
+*/
 void _do_tlb_refill(u_long *pentrylo, u_int va, u_int asid) {
 	tlb_invalidate(asid, va);
 	Pte *ppte;
@@ -54,9 +63,16 @@ void _do_tlb_refill(u_long *pentrylo, u_int va, u_int asid) {
 	 *
 	 *  **While** 'page_lookup' returns 'NULL', indicating that the '*ppte' could not be found,
 	 *  allocate a new page using 'passive_alloc' until 'page_lookup' succeeds.
-	 */
-
+	 
+	cur_pgdir 是一个在 kern/pmap.c 定义的全局变量，其中存储了当前进程一级页表基地址
+	位于 kseg0 的虚拟地址。
+	*/
 	/* Exercise 2.9: Your code here. */
+	while (page_lookup(cur_pgdir, va, &ppte) == NULL) {
+		passive_alloc(va, cur_pgdir, asid);
+	}
+
+
 
 	ppte = (Pte *)((u_long)ppte & ~0x7);
 	pentrylo[0] = ppte[0] >> 6;

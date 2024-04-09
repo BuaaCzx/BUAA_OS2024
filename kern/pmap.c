@@ -170,13 +170,14 @@ void page_init(void) {
 	freemem = ROUND(freemem, PAGE_SIZE);
 	/* Step 3: Mark all memory below `freemem` as used (set `pp_ref` to 1) */
 	/* Exercise 2.3: Your code here. (3/4) */
-	u_long page_used = PPN(PADDR(freemem));
-	for (int i = 0; i < page_used; i++) {
+	u_long page_used = PPN(PADDR(freemem)); // 求出当前已经被用过的物理内存的页数
+	// PPN宏用于提取物理地址 pa 中的页号。
+	for (int i = 0; i < page_used; i++) { // 把已经被用过的物理内存的 pp_ref(被引用次数) 设置为 1
 		pages[i].pp_ref = 1;
 	}
 	/* Step 4: Mark the other memory as free. */
 	/* Exercise 2.3: Your code here. (4/4) */
-	for (int i = page_used; i < npage; i++) {
+	for (int i = page_used; i < npage; i++) { // 其它的物理内存页都被设置为未被访问过，并且加入到 page_free_list 中
 		pages[i].pp_ref = 0;
 		LIST_INSERT_HEAD(&page_free_list, pages + i, pp_link);
 	}
@@ -194,16 +195,18 @@ void page_init(void) {
  *   necessary (either explicitly or via page_insert).
  *
  * Hint: Use LIST_FIRST and LIST_REMOVE defined in include/queue.h.
+
+	将 page_free_list 空闲链表头部页控制
+	块对应的物理页面分配出去，将其从空闲链表中移除，并清空此页中的数据，最后将 new
+	指向的空间赋值为这个页控制块的地址。
  */
 int page_alloc(struct Page **new) {
 	/* Step 1: Get a page from free memory. If fails, return the error code.*/
 	struct Page *pp;
 	/* Exercise 2.4: Your code here. (1/2) */
-	// pp = LIST_FIRST(&page_free_list);
 	if (LIST_EMPTY(&page_free_list)) {
 		return -E_NO_MEM;
 	}
-	// printk("###1\n");
 	pp = LIST_FIRST(&page_free_list); 
 	LIST_REMOVE(pp, pp_link);
 
@@ -211,6 +214,7 @@ int page_alloc(struct Page **new) {
 	 * Hint: use `memset`. */
 	/* Exercise 2.4: Your code here. (2/2) */
 	memset(page2kva(pp), 0, PAGE_SIZE);
+	// page2kva 函数位于 pmap.h 中，可以完成从页控制块地址到对应的物理地址的虚拟地址的转换。
 	*new = pp;
 	return 0;
 }
@@ -220,6 +224,9 @@ int page_alloc(struct Page **new) {
  *
  * Pre-Condition:
  *   'pp->pp_ref' is '0'.
+
+	它的作用是将 pp 指向的页控制块重新插入到 page_free_list
+	中。此外需要先确保 pp 指向的页控制块对应的物理页面引用次数为 0。
  */
 void page_free(struct Page *pp) {
 	assert(pp->pp_ref == 0);
@@ -244,6 +251,12 @@ void page_free(struct Page *pp) {
  * Hint:
  *   We use a two-level pointer to store page table entry and return a state code to indicate
  *   whether this function succeeds or not.
+
+	该函数将 **一级页表基地址 pgdir** 对应的两级页表结构中 va 虚拟地址所在的二级页表项的指针存储在 ppte 指
+	向的空间上。如果 create 不为 0 且对应的二级页表不存在，则会使用 page_alloc 函数分配一
+	页物理内存用于存放二级页表，如果分配失败则返回错误码。
+
+	简单来说就是把虚拟地址 va 所在的二级页表项的指针存在指针 ppte 对应的空间上
  */
 static int pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte) {
 // Pde 是一级页表项类型，Pte是二级页表项类型
@@ -253,6 +266,7 @@ static int pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte) {
 	/* Step 1: Get the corresponding page directory entry. */
 	/* Exercise 2.6: Your code here. (1/3) */
 	pgdir_entryp = pgdir + PDX(va);
+	// 找到对应的一级页表项
 
 
 	/* Step 2: If the corresponding page table is not existent (valid) then:
@@ -262,14 +276,16 @@ static int pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte) {
 	 *   * Otherwise, assign NULL to '*ppte' and return 0.
 	 */
 	/* Exercise 2.6: Your code here. (2/3) */
-	if (!(*pgdir_entryp & PTE_V)) {
+	if (!(*pgdir_entryp & PTE_V)) { // 一级页表项有效的条件：这个页表项有东西（非零），且页表的有效位 PTE_V 为 1.
 		if (create) {
-			int error = page_alloc(&pp);
+			int error = page_alloc(&pp); // 尝试分配一个新的页作为二级页表
 			if (error) {
 				return error;
 			} else {
 				pp->pp_ref++;
 				*pgdir_entryp = page2pa(pp) | PTE_C_CACHEABLE | PTE_V;
+				// 页表项里存的是物理页号
+				// 用 page2pa 获取页控制块对应的物理地址
 			}
 		} else {
 			*ppte = NULL;
@@ -279,6 +295,7 @@ static int pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte) {
 	/* Step 3: Assign the kernel virtual address of the page table entry to '*ppte'. */
 	/* Exercise 2.6: Your code here. (3/3) */
 	Pte *pte_entry = (Pte*) (KADDR(PTE_ADDR(*pgdir_entryp)));
+	// 获取二级页表基地址：先用 PTE_ADDR 获取页表项中的物理地址，然后再将这个物理地址转换为虚拟地址。进而得到二级页表基地址的虚拟地址
 	*ppte = pte_entry + PTX(va);
 
 	return 0;
@@ -295,19 +312,31 @@ static int pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte) {
  * Hint:
  *   If there is already a page mapped at `va`, call page_remove() to release this mapping.
  *   The `pp_ref` should be incremented if the insertion succeeds.
+
+	将一级页表基地址 pgdir 对应的两级页表结构中虚拟地址 va 映射到页控制块 pp 对应的
+	物理页面，并将页表项权限为设置为 perm
  */
 int page_insert(Pde *pgdir, u_int asid, struct Page *pp, u_long va, u_int perm) {
 	Pte *pte;
 
 	/* Step 1: Get corresponding page table entry. */
 	pgdir_walk(pgdir, va, 0, &pte);
+	// 先找一下对应的二级页表
 
-	if (pte && (*pte & PTE_V)) {
-		if (pa2page(*pte) != pp) {
-			page_remove(pgdir, asid, va);
+	if (pte && (*pte & PTE_V)) { // 如果有对应的二级页表
+		if (pa2page(*pte) != pp) { // 如果二级页表项对应的控制页块不是pp，把它删掉
+			/*
+				pa2page不能简单的理解为物理页号-->页控制块！！
+				它实际上是用于 **二级页表** 项到控制页块地址的转换。
+			*/
+			page_remove(pgdir, asid, va); // 解除 va 当前的映射
 		} else {
 			tlb_invalidate(asid, va);
-			*pte = page2pa(pp) | perm | PTE_C_CACHEABLE | PTE_V;
+			/*
+				使用 tlb_invalidate 函数可以实现删除特定虚拟地址的映射，每当页表被修改，就需要调
+				用该函数以保证下次访问相应虚拟地址时一定触发 TLB 重填，进而保证访存的正确性。
+			*/
+			*pte = page2pa(pp) | perm | PTE_C_CACHEABLE | PTE_V; // 直接修改二级页表项
 			return 0;
 		}
 	}
@@ -318,14 +347,14 @@ int page_insert(Pde *pgdir, u_int asid, struct Page *pp, u_long va, u_int perm) 
 	/* Step 3: Re-get or create the page table entry. */
 	/* If failed to create, return the error. */
 	/* Exercise 2.7: Your code here. (2/3) */
-	if (pgdir_walk(pgdir, va, 1, &pte)) {
+	if (pgdir_walk(pgdir, va, 1, &pte)) { // 找一下对应的二级页表，如果没有的话就新建一个二级页表
 		return -E_NO_MEM;
 	}
 	/* Step 4: Insert the page to the page table entry with 'perm | PTE_C_CACHEABLE | PTE_V'
 	 * and increase its 'pp_ref'. */
 	/* Exercise 2.7: Your code here. (3/3) */
-	*pte = page2pa(pp) | perm | PTE_C_CACHEABLE | PTE_V;
-	pp->pp_ref++;
+	*pte = page2pa(pp) | perm | PTE_C_CACHEABLE | PTE_V; // 设置二级页表项
+	pp->pp_ref++; // 更新 pp_ref
 	return 0;
 }
 
@@ -334,13 +363,19 @@ int page_insert(Pde *pgdir, u_int asid, struct Page *pp, u_long va, u_int perm) 
     Look up the Page that virtual address `va` map to.
   Post-Condition:
     Return a pointer to corresponding Page, and store it's page table entry to *ppte.
-    If `va` doesn't mapped to any Page, return NULL.*/
+    If `va` doesn't mapped to any Page, return NULL.
+	返回一级页表基地址 pgdir 对应的两级页表结构中虚拟地址 va 映射的物理页面的页控制块，同时将
+	ppte 指向的空间设为对应的二级页表项地址。
+
+	这玩意可以看作是一个加强版的 page_walk，它不仅可以获取二级页表项的地址，还可以返回相应页控制块的地址
+*/
 struct Page *page_lookup(Pde *pgdir, u_long va, Pte **ppte) {
 	struct Page *pp;
 	Pte *pte;
 
 	/* Step 1: Get the page table entry. */
 	pgdir_walk(pgdir, va, 0, &pte);
+	// 先找一下二级页表项
 
 	/* Hint: Check if the page table entry doesn't exist or is not valid. */
 	if (pte == NULL || (*pte & PTE_V) == 0) {
@@ -349,7 +384,7 @@ struct Page *page_lookup(Pde *pgdir, u_long va, Pte **ppte) {
 
 	/* Step 2: Get the corresponding Page struct. */
 	/* Hint: Use function `pa2page`, defined in include/pmap.h . */
-	pp = pa2page(*pte);
+	pp = pa2page(*pte); // 找一下对应的页控制块
 	if (ppte) {
 		*ppte = pte;
 	}
@@ -361,6 +396,8 @@ struct Page *page_lookup(Pde *pgdir, u_long va, Pte **ppte) {
 /* Overview:
  *   Decrease the 'pp_ref' value of Page 'pp'.
  *   When there's no references (mapped virtual address) to this page, release it.
+	令 pp 对应页控制块的引用次数减少 1，如果引
+	用次数为 0 则会调用 page_free 函数将对应物理页面重新设置为空闲页面。
  */
 void page_decref(struct Page *pp) {
 	assert(pp->pp_ref > 0);
@@ -374,11 +411,16 @@ void page_decref(struct Page *pp) {
 /* Lab 2 Key Code "page_remove" */
 // Overview:
 //   Unmap the physical page at virtual address 'va'.
+/*
+	作用是删除一级页表基地址
+	pgdir 对应的两级页表结构中虚拟地址 va 对物理地址的映射。如果存在这样的映射，那么对应
+	物理页面的引用次数会减少一次。
+*/
 void page_remove(Pde *pgdir, u_int asid, u_long va) {
 	Pte *pte;
 
 	/* Step 1: Get the page table entry, and check if the page table entry is valid. */
-	struct Page *pp = page_lookup(pgdir, va, &pte);
+	struct Page *pp = page_lookup(pgdir, va, &pte); // 找一下页控制项，如果本来就没有对应的，就不管，直接return
 	if (pp == NULL) {
 		return;
 	}
@@ -387,7 +429,7 @@ void page_remove(Pde *pgdir, u_int asid, u_long va) {
 	page_decref(pp);
 
 	/* Step 3: Flush TLB. */
-	*pte = 0;
+	*pte = 0; // 二级页表项置为0
 	tlb_invalidate(asid, va);
 	return;
 }

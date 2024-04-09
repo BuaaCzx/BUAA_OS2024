@@ -41,6 +41,10 @@ static inline struct Page *pa2page(u_long pa) {
 	return &pages[PPN(pa)];
 }
 
+/*
+	kva ： Kernel Virtual Address
+	这个函数完成了一个页控制块地址到对应的物理地址再到对应的虚拟地址的转换。
+*/
 static inline u_long page2kva(struct Page *pp) {
 	return KADDR(page2pa(pp));
 }

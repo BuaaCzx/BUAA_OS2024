@@ -20,6 +20,13 @@
 #define PPN(pa) (((u_long)(pa)) >> PGSHIFT)
 #define VPN(va) (((u_long)(va)) >> PGSHIFT)
 
+/*
+	PPN宏用于提取物理地址 pa 中的页号。这里，pa是一个指向物理内存的指针。
+	宏首先将pa转换为u_long类型，然后使用右移操作符>>将地址右移PGSHIFT位。
+	PGSHIFT是一个宏，它定义了页面大小（通常是2的幂）的对数。
+	移PGSHIFT位相当于将地址除以页面大小，得到的结果就是页号。
+*/
+
 // Page Table/Directory Entry flags
 
 #define PTE_HARDFLAG_SHIFT 6

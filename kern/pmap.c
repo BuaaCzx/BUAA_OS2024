@@ -1,3 +1,13 @@
+/*
+与本实验相关的映射与寻址规则（内存布局）如下:
+• 若虚拟地址处于 0x80000000~0x9fffffff (kseg0)，则将虚拟地址的最高位置 0 得到物理
+地址，通过 cache 访存。这一部分用于存放内核代码与数据。
+• 若虚拟地址处于 0xa0000000~0xbfffffff (kseg1)，则将虚拟地址的最高 3 位置 0 得到
+物理地址，不通过 cache 访存。这一部分可以用于访问外设。
+• 若虚拟地址处于 0x00000000~0x7fffffff (kuseg)，则需要通过 TLB 转换成物理地址，
+再通过 cache 访存。这一部分用于存放用户程序代码与数据。
+*/
+
 #include <bitops.h>
 #include <env.h>
 #include <malta.h>
@@ -12,22 +22,51 @@ u_long npage;	       /* Amount of memory(in pages) */
 Pde *cur_pgdir;
 
 struct Page *pages;
+/*
+	struct Page {
+		Page_LIST_entry_t pp_link;
+
+		u_short pp_ref;
+		//  pp_ref 对应这一页物理内存被引用的次数，它等于有多少虚拟页映射到该物理页
+	};
+	pages 是一个大小为 npage 的全局数组，page 是一个页控制块，每一个页控制块对应一页的物理内存，MOS 用这个结构体来 **按页管理物理内存的分配**。
+
+	用一个数组存放这些 Page 结构体，首个 Page 的地址为 P，则 P[i] 对应从 0 开始计数的第 i 个物理
+	页面。
+
+	Page 与其对应的物理页面地址的转换可以使用 include/pmap.h 中的 page2pa 和 pa2page 这两个函数。
+
+	pa2page(u_long pa) ：物理地址 --> 页控制块（读取 pte 后可进行转换）
+	page2pa(struct Page *pp) ：页控制块 --> 物理地址（填充 pte 时常用）
+
+*/
+
 static u_long freemem;
 
 struct Page_list page_free_list; /* Free list of physical pages */
 
+/*
+	将空闲物理页对应的 Page 结构体全部插入一个链表中，该链表被称为空闲链表，即 page_free_list。
+
+	当一个进程需要分配内存时，就需要将空闲链表头部的页控制块对应的那一页物理内存分
+	配出去，同时将该页控制块从空闲链表中删去。
+
+	当一页物理内存被使用完毕（准确来说，引用次数为 0）时，将其对应的页控制块重新插入
+	到空闲链表的头部。
+*/
+
 /* Overview:
  *   Use '_memsize' from bootloader to initialize 'memsize' and
  *   calculate the corresponding 'npage' value.
+	探测硬件可用内存，并对一些和内存管理相关的变量进行初始化
  */
 void mips_detect_memory(u_int _memsize) {
 	/* Step 1: Initialize memsize. */
-	memsize = _memsize;
+	memsize = _memsize; // 设置物理内存大小
 
 	/* Step 2: Calculate the corresponding 'npage' value. */
 	/* Exercise 2.1: Your code here. */
-	npage = memsize / PAGE_SIZE;
-
+	npage = memsize / PAGE_SIZE; // 计算页数
 
 	printk("Memory size: %lu KiB, number of pages: %lu\n", memsize / 1024, npage);
 }
@@ -37,29 +76,55 @@ void mips_detect_memory(u_int _memsize) {
     Allocate `n` bytes physical memory with alignment `align`, if `clear` is set, clear the
     allocated memory.
     This allocator is used only while setting up virtual memory system.
+	用于在建立页式内存管理机制之前分配内存空间。
+	为管理空闲物理页面的数据结构：页控制块数组 struct Page *pages 分配所用的内存空间
    Post-Condition:
-    If we're out of memory, should panic, else return this address of memory we have allocated.*/
+    If we're out of memory, should panic, else return this address of memory we have allocated.
+
+	分配 n 字节的空间并返回初始的虚拟地址，同时将地址按 align 字节对
+	齐（保证 align 可以整除初始虚拟地址），若 clear 为真，则将对应内存空间的值清零，否则不
+	清零。
+
+	这个函数中对内存的操作位于 kseg0 段。里面表示地址的变量都是虚拟地址。
+	位于 kseg0 段的地址转换宏：
+	PADDR(kva) ：kseg0 处虚地址 --> 物理地址
+	KADDR(pa) ：物理地址 --> kseg0 处虚地址（读取 pte 后可进行转换）
+*/
 void *alloc(u_int n, u_int align, int clear) {
 	extern char end[];
-	u_long alloced_mem;
+	/*
+		该变量对应 **虚拟地址** 0x80400000，在建立内存管理机制时，本实验都是通过
+		kseg0 来访问内存。根据映射规则，0x80400000 对应的物理地址是 0x400000。
+		接下来将从物理地址 0x400000 开始分配物理内存，用于建立管理内存的数据结构。
+	*/
+	u_long alloced_mem; // 即将分配出来的物理内存空间的首地址
 
 	/* Initialize `freemem` if this is the first time. The first virtual address that the
 	 * linker did *not* assign to any kernel code or global variables. */
 	if (freemem == 0) {
 		freemem = (u_long)end; // end
 	}
+	// 变量 freemem 表示：小于 freemem 对应物理地址的物理内存都已经被分配
 
 	/* Step 1: Round up `freemem` up to be aligned properly */
 	freemem = ROUND(freemem, align);
+	/*
+		找到 freemem 之上最小的、按
+		align 对齐的初始虚拟地址，中间未用到的地址空间全部放弃。实际上是找到了一段空闲
+		的、起始地址与 align 对齐的内存空间，并把它赋值给 freemem
+	*/
 
 	/* Step 2: Save current value of `freemem` as allocated chunk. */
 	alloced_mem = freemem;
+	// 当前的 freemem 要作为首地址被分配出去了
 
 	/* Step 3: Increase `freemem` to record allocation. */
 	freemem = freemem + n;
+	// freemem 后面的 n 个空间被分配，更新 freemem
 
 	// Panic if we're out of memory.
 	panic_on(PADDR(freemem) >= memsize);
+	// 检查分配后的内存空间有没有超出最大的内存上限。用 PADDR 把虚拟地址 freemem 转换成相应的物理地址
 
 	/* Step 4: Clear allocated chunk if parameter `clear` is set. */
 	if (clear) {
@@ -68,6 +133,7 @@ void *alloc(u_int n, u_int align, int clear) {
 
 	/* Step 5: return allocated chunk. */
 	return (void *)alloced_mem;
+	// 返回分配出来的空间的虚拟地址的首地址
 }
 /* End of Key Code "alloc" */
 
@@ -79,7 +145,10 @@ void mips_vm_init() {
 	/* Allocate proper size of physical memory for global array `pages`,
 	 * for physical memory management. Then, map virtual address `UPAGES` to
 	 * physical address `pages` allocated before. For consideration of alignment,
-	 * you should round up the memory size before map. */
+	 * you should round up the memory size before map. 
+	 为全局数组`pages`分配适当大小的物理内存，用于物理内存管理。然后，将虚拟地址`UPAGES`映射到之前分配的物理地址`pages`。
+	 在映射之前，考虑到对齐问题，你应该将内存大小上调至下一个对齐边界。
+	 */
 	pages = (struct Page *)alloc(npage * sizeof(struct Page), PAGE_SIZE, 1);
 	printk("to memory %x for struct Pages.\n", freemem);
 	printk("pmap.c:\t mips vm init success\n");

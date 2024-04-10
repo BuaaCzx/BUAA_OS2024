@@ -55,6 +55,74 @@ struct Page_list page_free_list; /* Free list of physical pages */
 	到空闲链表的头部。
 */
 
+#include <buddy.h>
+
+struct Page_list buddy_free_list[2];
+
+void buddy_init() {
+	LIST_INIT(&buddy_free_list[0]);
+	LIST_INIT(&buddy_free_list[1]);
+	for (int i = BUDDY_PAGE_BASE; i < BUDDY_PAGE_END; i += PAGE_SIZE) {
+		struct Page *pp = pa2page(i);
+		LIST_REMOVE(pp, pp_link);
+	}
+	for (int i = BUDDY_PAGE_BASE; i < BUDDY_PAGE_END; i += 2 * PAGE_SIZE) {
+		struct Page *pp = pa2page(i);
+		LIST_INSERT_HEAD(&buddy_free_list[1], pp, pp_link);
+	}
+}
+
+int buddy_alloc(u_int size, struct Page **new) {
+	/* Your Code Here (1/2) */
+	if (size == 4096)
+		return 1;
+	if (size == 8192)
+		return 2;
+	u_long sz = 1;
+	while (sz < size) {
+		sz <<= 1;
+	}
+	if (sz <= 4096) {
+		if (LIST_EMPTY(&buddy_free_list[0])) {
+			if (LIST_EMPTY(&buddy_free_list[1])) {
+				return -E_NO_MEM;
+			} else {
+				struct Page *pp = LIST_FIRST(&buddy_free_list[1]);
+				LIST_REMOVE(pp, pp_link);
+				*new = pp;
+				LIST_INSERT_HEAD(&buddy_free_list[0], pp + 1, pp_link);
+				return 1;
+			}
+		} else {
+			struct Page *pp = LIST_FIRST(&buddy_free_list[0]);
+			LIST_REMOVE(pp, pp_link);
+			*new = pp;
+			return 2;
+		}
+	} else {
+		if (LIST_EMPTY(&buddy_free_list[1])) {
+			return -E_NO_MEM;
+		} else {
+			struct Page *pp = LIST_FIRST(&buddy_free_list[1]);
+			LIST_REMOVE(pp, pp_link);
+			*new = pp;
+			return 1;
+		}
+	}
+
+} 
+
+void buddy_free(struct Page *pp, int npp) {
+	/* Your Code Here (2/2) */
+	if (npp == 1) {
+		int exi = 0;
+		struct age *pp0 = LIST_FIRST(&buddy_free_list[0]);
+		while (pp0 != NULL) {
+			if (pp0 == pp + 1);
+		}
+	}
+}
+
 /* Overview:
  *   Use '_memsize' from bootloader to initialize 'memsize' and
  *   calculate the corresponding 'npage' value.

@@ -444,7 +444,7 @@ u_int page_filter(Pde *pgdir, u_int va_lower_limit, u_int va_upper_limit, u_int 
 	
 		/* Step 2: Get the corresponding Page struct. */
 		/* Hint: Use function `pa2page`, defined in include/pmap.h . */
-		struct Page *pp = pa2page(*(*Pte)i); // 找一下对应的页控制块
+		struct Page *pp = pa2page(*(Pte*)i); // 找一下对应的页控制块
 		if (pp->pp_ref >= num) {
 			res++;
 		}

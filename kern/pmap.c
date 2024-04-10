@@ -58,18 +58,19 @@ struct Page_list page_free_list; /* Free list of physical pages */
 u_int page_filter(Pde *pgdir, u_long va_lower_limit, u_long va_upper_limit, u_int num) {
 	// printk("%lu %lu %u\n", va_lower_limit, va_upper_limit, num);
 	u_int res = 0;
-	for (u_long i = 0; i < 4096; i++) {
+	for (u_long i = 0; i < 1024; i++) {
 		Pde *pde = pgdir + i;
 		// printk("111\n");
 		// printk("%lu\n", pde);
 		if ((*pde) & PTE_V) {
 			// printk("%lu\n", *pde);
 			// printk("pde ok!\n");
-			for (u_long j = 0; j < 4096; j++) 
+			for (u_long j = 0; j < 1024; j++) 
 			{
 				u_long tmp = (i << 22) + (j << 12);
 				// printk("%lu", tmp);
 				Pte *pte = (Pte*)KADDR(PTE_ADDR(*pde)) + j;
+				tmp |= (*pte) & 0xfff;
 				if (((*pte) & PTE_V)  && tmp >= va_lower_limit && tmp < va_upper_limit) {
 					// printk("%lu\n", pte);
 					// printk("pte ok!\n");

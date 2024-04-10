@@ -55,6 +55,24 @@ struct Page_list page_free_list; /* Free list of physical pages */
 	到空闲链表的头部。
 */
 
+u_int page_filter(Pde *pgdir, u_long va_lower_limit, u_long va_upper_limit, u_int num) {
+	u_int res = 0;
+	for (u_long i = 0; i < 1024; i++) {
+		Pde*pde = pgdir + i;
+		if ((*pde) & PTE_V) {
+			for (u_long j = 0; j < 1024; j++) {
+				Pte *pte = (Pte*)KADDR(PTE_ADDR(*pde)) + j;
+				if (((*pte) & PTE_V) && pte >= va_lower_limit && pte <= va_lower_limit) {
+					struct Page *pp = pa2page(*pte);
+					res += pp->pp_ref >= num;
+				}
+			}
+		} 
+	}
+	return res;
+}
+
+
 /* Overview:
  *   Use '_memsize' from bootloader to initialize 'memsize' and
  *   calculate the corresponding 'npage' value.
@@ -434,23 +452,6 @@ void page_remove(Pde *pgdir, u_int asid, u_long va) {
 	return;
 }
 /* End of Key Code "page_remove" */
-
-u_int page_filter(Pde *pgdir, u_int va_lower_limit, u_int va_upper_limit, u_int num) {
-	u_int res = 0;
-	for (u_int i = va_lower_limit; i < va_upper_limit; i += 4096) {
-		if ((Pte*)i == NULL || (*(Pte*)i & PTE_V) == 0) {
-			continue;
-		}
-	
-		/* Step 2: Get the corresponding Page struct. */
-		/* Hint: Use function `pa2page`, defined in include/pmap.h . */
-		struct Page *pp = pa2page(*(Pte*)i); // 找一下对应的页控制块
-		if (pp->pp_ref >= num) {
-			res++;
-		}
-	}
-	return res;
-}
 
 void physical_memory_manage_check(void) {
 	struct Page *pp, *pp0, *pp1, *pp2;

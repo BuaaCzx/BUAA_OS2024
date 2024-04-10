@@ -74,10 +74,6 @@ void buddy_init() {
 
 int buddy_alloc(u_int size, struct Page **new) {
 	/* Your Code Here (1/2) */
-	if (size == 4096)
-		return 1;
-	if (size == 8192)
-		return 2;
 	u_long sz = 1;
 	while (sz < size) {
 		sz <<= 1;
@@ -115,11 +111,9 @@ int buddy_alloc(u_int size, struct Page **new) {
 void buddy_free(struct Page *pp, int npp) {
 	/* Your Code Here (2/2) */
 	if (npp == 1) {
-		int exi = 0;
-		struct age *pp0 = LIST_FIRST(&buddy_free_list[0]);
-		while (pp0 != NULL) {
-			if (pp0 == pp + 1);
-		}
+		LIST_INSERT_HEAD(&buddy_free_list[0], pp, pp_link);
+	} else {
+		LIST_INSERT_HEAD(&buddy_free_list[1], pp, pp_link);
 	}
 }
 

@@ -17,6 +17,8 @@
 	 *
 	 */
 	/* Exercise 3.11: Your code here. */
+	mtc0 0, CP0_COUNT
+	mtc0 TIMER_INTERVAL, CP0_COMPARE
 
 .endm
 // clang-format on

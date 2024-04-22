@@ -493,7 +493,7 @@ void env_check() {
 	assert(env_alloc(&pe1, 0) == 0);
 	assert(env_alloc(&pe2, 0) == 0);
 
-	printk("env_alloc finished!\n");
+	printk("env_alloc1 finished!\n");
 
 	assert(pe0);
 	assert(pe1 && pe1 != pe0);
@@ -506,6 +506,8 @@ void env_check() {
 
 	/* should be no free memory */
 	assert(env_alloc(&pe, 0) == -E_NO_FREE_ENV);
+
+	printk("env_alloc2 finished!\n");
 
 	/* recover env_free_list */
 	env_free_list = fl;

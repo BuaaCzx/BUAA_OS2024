@@ -188,6 +188,7 @@ static int env_setup_vm(struct Env *e) {
 	 */
 	struct Page *p;
 	try(page_alloc(&p));
+	// try 宏定义在 error.h 中
 	/* Exercise 3.3: Your code here. */
 	p->pp_ref++;
 	e->env_pgdir = page2kva(p);
@@ -238,7 +239,10 @@ int env_alloc(struct Env **new, u_int parent_id) {
 
 	/* Step 2: Call a 'env_setup_vm' to initialize the user address space for this new Env. */
 	/* Exercise 3.4: Your code here. (2/4) */
-	env_setup_vm(e);
+	if ((r = env_setup_vm(e))) {
+		return r;
+	}
+	// env_setup_vm(e);
 
 	/* Step 3: Initialize these fields for the new Env with appropriate values:
 	 *   'env_user_tlb_mod_entry' (lab4), 'env_runs' (lab6), 'env_id' (lab3), 'env_asid' (lab3),
@@ -296,7 +300,9 @@ static int load_icode_mapper(void *data, u_long va, size_t offset, u_int perm, c
 
 	/* Step 1: Allocate a page with 'page_alloc'. */
 	/* Exercise 3.5: Your code here. (1/2) */
-	page_alloc(&p);
+	if ((r = page_alloc(&p))) {
+		return r;
+	}
 
 	/* Step 2: If 'src' is not NULL, copy the 'len' bytes started at 'src' into 'offset' at this
 	 * page. */

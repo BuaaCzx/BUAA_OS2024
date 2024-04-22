@@ -493,6 +493,8 @@ void env_check() {
 	assert(env_alloc(&pe1, 0) == 0);
 	assert(env_alloc(&pe2, 0) == 0);
 
+	printk("env_alloc finished!\n");
+
 	assert(pe0);
 	assert(pe1 && pe1 != pe0);
 	assert(pe2 && pe2 != pe1 && pe2 != pe0);

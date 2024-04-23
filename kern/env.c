@@ -8,6 +8,71 @@
 
 struct Env envs[NENV] __attribute__((aligned(PAGE_SIZE))); // All environments
 
+/*
+struct Env 的定义在 env.h 中给出
+// Control block of an environment (process).
+struct Env {
+	struct Trapframe env_tf;	 // saved context (registers) before switching
+	
+	Trapframe 结构体的定义在 include/trap.h 中，在发生进程调度，或当陷入内
+	核时，会将当时的进程上下文环境保存在 env_tf 变量中。
+	实际上，阅读 Trapframe 的定义源码不难发现，Trapframe 这个结构体里面装了32个寄存器的值，
+	和诸如cp0，hi，lo等特殊寄存器的值。
+
+	LIST_ENTRY(Env) env_link;	 // intrusive entry in 'env_free_list'
+
+	env_link 的机制类似于 Lab2 中的 pp_link，使用它来构造空闲进程链表
+	env_free_list。实际上，env_link中存储next和prev，这个变量的存在使结构体Env可以作为一个链表项。
+
+	u_int env_id;			 // unique environment identifier
+
+	每个进程的 env_id 都不一样，它是进程独一无二的标识符。
+
+	u_int env_asid;			 // ASID of this env
+	u_int env_parent_id;		 // env_id of this env's parent
+
+	在之后的实验中，我们将了解到进程是可以被其他进程创建的，创建本
+	进程的进程称为父进程。此变量记录父进程的进程 id，进程之间通过此关联可以形成一棵
+	进程树。
+
+	u_int env_status;		 // status of this env
+
+	该字段只能有以下三种取值：
+	– ENV_FREE : 表明该进程控制块没有被任何进程使用，即该进程控制块处于进程空闲
+	链表中。
+	– ENV_NOT_RUNNABLE : 表明该进程处于阻塞状态，处于该状态的进程需要在一定条件
+	下变成就绪状态从而被 CPU 调度。（比如因进程通信阻塞时变为 ENV_NOT_RUNNABLE，
+	收到信息后变回 ENV_RUNNABLE）
+	– ENV_RUNNABLE : 该进程处于执行状态或就绪状态，即其可能是正在运行的，也可能
+	正在等待被调度。
+
+	Pde *env_pgdir;			 // page directory
+
+	这个字段保存了该进程页目录的内核虚拟地址。
+
+	TAILQ_ENTRY(Env) env_sched_link; // intrusive entry in 'env_sched_list'
+
+	这个字段用来构造调度队列 env_sched_list（和env_link类似）
+
+	u_int env_pri;			 // schedule priority
+
+	这个字段保存了该进程的优先级。
+
+	// Lab 4 IPC
+	u_int env_ipc_value;   // the value sent to us
+	u_int env_ipc_from;    // envid of the sender
+	u_int env_ipc_recving; // whether this env is blocked receiving
+	u_int env_ipc_dstva;   // va at which the received page should be mapped
+	u_int env_ipc_perm;    // perm in which the received page should be mapped
+
+	// Lab 4 fault handling
+	u_int env_user_tlb_mod_entry; // userspace TLB Mod handler
+
+	// Lab 6 scheduler counts
+	u_int env_runs; // number of times we've been env_run'ed
+};
+*/
+
 struct Env *curenv = NULL;	      // the current env
 static struct Env_list env_free_list; // Free list
 
@@ -59,6 +124,16 @@ static void asid_free(u_int i) {
  *
  * Pre-Condition:
  *   'pa', 'va' and 'size' are aligned to 'PAGE_SIZE'.
+
+	段地址映射函数 void map_segment(Pde *pgdir, u_int asid, u_long pa, u_long va,
+	u_long size, u_int perm)，功能是在一级页表基地址 pgdir 对应的两级页表结构中做段地址
+	映射，将虚拟地址段 [va,va+size) 映射到物理地址段 [pa,pa+size)，因为是按页映射，要求
+	size 必须是页面大小的整数倍。同时为相关页表项的权限为设置为 perm。它在这里的作用是将
+	内核中的 Page 和 Env 数据结构映射到用户地址，以供用户程序读取。
+
+	该函数实际上是对 page_insert 函数的封装。 page_insert 函数将单个物理页面映射到虚拟页面，
+	map_segment 则调用 page_insert 函数实现将多个连续的物理页面映射到多个连续的虚拟页面。
+
  */
 static void map_segment(Pde *pgdir, u_int asid, u_long pa, u_long va, u_int size, u_int perm) {
 
@@ -163,6 +238,7 @@ void env_init(void) {
 	 *
 	 * Here we first map them into the *template* page directory 'base_pgdir'.
 	 * Later in 'env_setup_vm', we will copy them into each 'env_pgdir'.
+	 分配一个页作为“模板页表”
 	 */
 	struct Page *p;
 	panic_on(page_alloc(&p));
@@ -189,6 +265,14 @@ static int env_setup_vm(struct Env *e) {
 	struct Page *p;
 	try(page_alloc(&p));
 	// try 宏定义在 error.h 中
+	/*
+		#define try(expr)                                                                                  \
+		do {                                                                                       \
+			int _r = (expr);                                                                   \
+			if (_r != 0)                                                                       \
+				return _r;                                                                 \
+		} while (0)
+	*/
 	/* Exercise 3.3: Your code here. */
 	p->pp_ref++;
 	e->env_pgdir = page2kva(p);
@@ -239,9 +323,10 @@ int env_alloc(struct Env **new, u_int parent_id) {
 
 	/* Step 2: Call a 'env_setup_vm' to initialize the user address space for this new Env. */
 	/* Exercise 3.4: Your code here. (2/4) */
-	if ((r = env_setup_vm(e))) {
-		return r;
-	}
+	// if ((r = env_setup_vm(e))) {
+	// 	return r;
+	// }
+	try(env_setup_vm(e));
 	// env_setup_vm(e);
 
 	/* Step 3: Initialize these fields for the new Env with appropriate values:
@@ -255,7 +340,10 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	e->env_user_tlb_mod_entry = 0; // for lab4
 	e->env_runs = 0;	       // for lab6
 	/* Exercise 3.4: Your code here. (3/4) */
-	asid_alloc(&e->env_asid);
+	// if (r = asid_alloc(&e->env_asid)) {
+	// 	return r;
+	// }
+	try(r = asid_alloc(&e->env_asid));
 	e->env_id = mkenvid(e);
 
 	/* Step 4: Initialize the sp and 'cp0_status' in 'e->env_tf'.

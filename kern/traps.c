@@ -31,6 +31,7 @@ void do_reserved(struct Trapframe *tf) {
 }
 
 u_int* fff(u_long addr) {
+    Pte *pte;
     struct Page *pp = page_lookup(curenv->env_pgdir, addr, &pte);
     return (u_int*)(KADDR(page2pa(pp)) + PTE_FLAGS(addr));
 }

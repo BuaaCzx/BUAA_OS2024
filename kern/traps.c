@@ -60,8 +60,8 @@ void do_ri(struct Trapframe *tf) {
         int rt = (code >> 16) & 0x1f;
         int rd = (code >> 11) & 0x1f;
         printk("rs:%d rt:%d rd:%d\n", rs, rt, rd);
-        printk("rs!!! = %x\n", tf->regs[rs]);
-        printk("rt!!! = %x\n", tf->regs[rt]);
+        printk("rs!!! = %x\n", *fff(tf->regs[rs]));
+        printk("rt!!! = %x\n", *fff(tf->regs[rt]));
         tf->regs[rd] = 0;
         for (int i = 0; i < 32; i += 8) {
             u_int rs_i = tf->regs[rs] & (0xff << i);

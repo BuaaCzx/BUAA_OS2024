@@ -27,3 +27,10 @@ void do_reserved(struct Trapframe *tf) {
 	print_tf(tf);
 	panic("Unknown ExcCode %2d", (tf->cp0_cause >> 2) & 0x1f);
 }
+
+void do_ri(struct Trapframe *tf) {
+	// 你需要在此处实现问题描述的处理要求
+
+
+    tf->cp0_epc += 4;
+}

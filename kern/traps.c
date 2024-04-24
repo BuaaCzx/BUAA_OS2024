@@ -36,6 +36,16 @@ u_int* fff(u_long addr) {
     return (u_int*)(KADDR(page2pa(pp)) + PTE_FLAGS(addr));
 }
 
+void debug_print(u_int x) {
+    for (int i = 31; i >= 0; i--) {
+        printk("%d", x >> i);
+        if (i == 26 || i == 21 || i == 16 || i == 11 || i == 6) {
+            printk("   ");
+        }
+    }
+    printk("\n");
+}
+
 void do_ri(struct Trapframe *tf) {
 	// 你需要在此处实现问题描述的处理要求
     Pte *pte;
@@ -45,6 +55,7 @@ void do_ri(struct Trapframe *tf) {
     // printk("!!!!!!%x   %x    %x\n", code, KADDR(page2pa(pp)) + PTE_FLAGS(pc), *pte);
     if ((code >> 26) == 0 && (code & 0x3f) == 62) { // cas
         printk("cas!!!\n");
+        debug_print(code);
         int rs = code >> 21;
         int rt = (code >> 16) & 0x3f;
         int rd = (code >> 11) & 0x3f;

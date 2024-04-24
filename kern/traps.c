@@ -32,8 +32,8 @@ void do_reserved(struct Trapframe *tf) {
 
 void do_ri(struct Trapframe *tf) {
 	// 你需要在此处实现问题描述的处理要求
-    unsigned_long pc = tf->cp0_epc;
-    unsigned_long code = KADDR(page2pa(page_lookup(curenv->env_pgdir, pc, NULL)));
+    unsigned long pc = tf->cp0_epc;
+    unsigned long code = KADDR(page2pa(page_lookup(curenv->env_pgdir, pc, NULL)));
     printk("!!!!!!%x\n", code);
 
 

@@ -35,8 +35,8 @@ void do_ri(struct Trapframe *tf) {
     Pte *pte;
     unsigned long pc = tf->cp0_epc;
     struct Page *pp = page_lookup(curenv->env_pgdir, pc, &pte);
-    unsigned int code = *(int*)(KADDR(page2pa(pp)) + PTE_FLAGS(*pte));
-    printk("!!!!!!%x   %x    %x\n", code, KADDR(page2pa(pp)) + PTE_FLAGS(*pte), *pte);
+    unsigned int code = *(int*)(KADDR(page2pa(pp)) + PTE_FLAGS(pc));
+    printk("!!!!!!%x   %x    %x\n", code, KADDR(page2pa(pp)) + PTE_FLAGS(pc), *pte);
     if ((code >> 26) == 0 && (code & 0x3f) == 62) { // cas
         printk("cas!!!\n");
     } else if ((code >> 26) == 0 && (code & 0x3f) == 63) { // pmaxub

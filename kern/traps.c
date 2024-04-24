@@ -44,10 +44,11 @@ void do_ri(struct Trapframe *tf) {
     unsigned int code = *(int*)(KADDR(page2pa(pp)) + PTE_FLAGS(pc));
     // printk("!!!!!!%x   %x    %x\n", code, KADDR(page2pa(pp)) + PTE_FLAGS(pc), *pte);
     if ((code >> 26) == 0 && (code & 0x3f) == 62) { // cas
-        // printk("cas!!!\n");
+        printk("cas!!!\n");
         int rs = code >> 21;
         int rt = (code >> 16) & 0x3f;
         int rd = (code >> 11) & 0x3f;
+        printk("rs:%d rt:%d rd:%d\n", rs, rt, rd);
         tf->regs[rd] = 0;
         for (int i = 0; i < 32; i += 8) {
             u_int rs_i = tf->regs[rs] & (0xff << i);

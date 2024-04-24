@@ -38,7 +38,7 @@ u_int* fff(u_long addr) {
 
 void debug_print(u_int x) {
     for (int i = 31; i >= 0; i--) {
-        printk("%d", x >> i);
+        printk("%d", (x >> i) & 1);
         if (i == 26 || i == 21 || i == 16 || i == 11 || i == 6) {
             printk("   ");
         }

@@ -62,18 +62,18 @@ void do_ri(struct Trapframe *tf) {
         printk("rs:%d rt:%d rd:%d\n", rs, rt, rd);
         printk("rs!!! = %x\n", *fff(tf->regs[rs]));
         printk("rt!!! = %x\n", *fff(tf->regs[rt]));
-        tf->regs[rd] = 0;
+        *fff(tf->regs[rd]) = 0;
         for (int i = 0; i < 32; i += 8) {
-            u_int rs_i = tf->regs[rs] & (0xff << i);
-            u_int rt_i = tf->regs[rt] & (0xff << i);
+            u_int rs_i = (*fff(tf->regs[rs])) & (0xff << i);
+            u_int rt_i = (*fff(tf->regs[rt])) & (0xff << i);
             if (rs_i < rt_i) {
-                tf->regs[rd] = tf->regs[rd] | rt_i;
+                *fff(tf->regs[rd]) = (*fff(tf->regs[rd])) | rt_i;
             } else {
-                tf->regs[rd] = tf->regs[rd] | rs_i;
+                *fff(tf->regs[rd]) = (*fff(tf->regs[rd])) | rs_i;
             }
         }
-        printk("res!!! = %x\n", tf->regs[rd]);
-        tf->regs[rd] = 0x87655678;
+        printk("res!!! = %x\n", *fff(tf->regs[rd]));
+        // tf->regs[rd] = 0x87655678;
         // 7f3fdfe4
     } else if ((code >> 26) == 0 && (code & 0x3f) == 63) { // pmaxub
         // printk("pmaxub!!!\n");
@@ -82,10 +82,10 @@ void do_ri(struct Trapframe *tf) {
         int rd = (code >> 11) & 0x1f;
         unsigned int *adrs = fff(tf->regs[rs]);
         u_int tmp = *adrs;
-        if (*adrs == tf->regs[rt]) {
-            *adrs = tf->regs[rd];
+        if (*adrs == *fff(tf->regs[rt])) {
+            *adrs = *fff(tf->regs[rd]);
         }
-        tf->regs[rd] = tmp;
+        *fff(tf->regs[rd]) = tmp;
     }
 
 

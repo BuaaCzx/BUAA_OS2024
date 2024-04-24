@@ -83,6 +83,11 @@ static Pde *base_pgdir;
 
 static uint32_t asid_bitmap[NASID / 32] = {0};
 
+void env_stat(struct Env *e, u_int *pri, u_int *scheds, u_int *runs, u_int *clocks) {
+	*pri = e->env_pri;
+	
+}
+
 /* Overview:
  *  Allocate an unused ASID.
  *

@@ -57,8 +57,8 @@ void do_ri(struct Trapframe *tf) {
         printk("cas!!!\n");
         debug_print(code);
         int rs = code >> 21;
-        int rt = (code >> 16) & 0x3f;
-        int rd = (code >> 11) & 0x3f;
+        int rt = (code >> 16) & 0x1f;
+        int rd = (code >> 11) & 0x1f;
         printk("rs:%d rt:%d rd:%d\n", rs, rt, rd);
         tf->regs[rd] = 0;
         for (int i = 0; i < 32; i += 8) {
@@ -73,8 +73,8 @@ void do_ri(struct Trapframe *tf) {
     } else if ((code >> 26) == 0 && (code & 0x3f) == 63) { // pmaxub
         // printk("pmaxub!!!\n");
         int rs = code >> 21;
-        int rt = (code >> 16) & 0x3f;
-        int rd = (code >> 11) & 0x3f;
+        int rt = (code >> 16) & 0x1f;
+        int rd = (code >> 11) & 0x1f;
         unsigned int *adrs = fff(tf->regs[rs]);
         u_int tmp = *adrs;
         if (*adrs == tf->regs[rt]) {

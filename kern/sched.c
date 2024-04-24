@@ -51,7 +51,7 @@ void schedule(int yield) {
 	}
 	count--;
 	struct Trapframe *tf = ((struct Trapframe *)KSTACKTOP - 1);
-	e->env_count = tf->cp0_count;
+	e->env_count += tf->cp0_count;
 	env_run(e);
 
 }

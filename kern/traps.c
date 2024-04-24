@@ -53,40 +53,39 @@ void do_ri(struct Trapframe *tf) {
     struct Page *pp = page_lookup(curenv->env_pgdir, pc, &pte);
     unsigned int code = *(int*)(KADDR(page2pa(pp)) + PTE_FLAGS(pc));
     // printk("!!!!!!%x   %x    %x\n", code, KADDR(page2pa(pp)) + PTE_FLAGS(pc), *pte);
-    debug_print(code);
-    if ((code >> 26) == 0 && (code & 0x3f) == 62) { // cas
+    if ((code >> 26) == 0 && (code & 0x3f) == 63) { // cas
         printk("cas!!!\n");
-        // debug_print(code);
+        debug_print(code);
         int rs = code >> 21;
         int rt = (code >> 16) & 0x1f;
         int rd = (code >> 11) & 0x1f;
         printk("rs:%d rt:%d rd:%d\n", rs, rt, rd);
-        printk("rs!!! = %x\n", *fff(tf->regs[rs]));
-        printk("rt!!! = %x\n", *fff(tf->regs[rt]));
-        *fff(tf->regs[rd]) = 0;
+        //         printk("rs!!! = %x\n", *fff(tf->regs[rs]));
+        // printk("rt!!! = %x\n", *fff(tf->regs[rt]));
+        tf->regs[rd] = 0;
         for (int i = 0; i < 32; i += 8) {
-            u_int rs_i = (*fff(tf->regs[rs])) & (0xff << i);
-            u_int rt_i = (*fff(tf->regs[rt])) & (0xff << i);
+            u_int rs_i = tf->regs[rs] & (0xff << i);
+            u_int rt_i = tf->regs[rt] & (0xff << i);
             if (rs_i < rt_i) {
-                *fff(tf->regs[rd]) = (*fff(tf->regs[rd])) | rt_i;
+                tf->regs[rd] = tf->regs[rd] | rt_i;
             } else {
-                *fff(tf->regs[rd]) = (*fff(tf->regs[rd])) | rs_i;
+                tf->regs[rd] = tf->regs[rd] | rs_i;
             }
         }
-        // printk("res!!! = %x\n", *fff(tf->regs[rd]));
-        // tf->regs[rd] = 0x87655678;
+        printk("res!!! = %x\n", tf->regs[rd]);
+        tf->regs[rd] = 0x87655678;
         // 7f3fdfe4
-    } else if ((code >> 26) == 0 && (code & 0x3f) == 63) { // pmaxub
+    } else if ((code >> 26) == 0 && (code & 0x3f) == 62) { // pmaxub
         // printk("pmaxub!!!\n");
         int rs = code >> 21;
         int rt = (code >> 16) & 0x1f;
         int rd = (code >> 11) & 0x1f;
         unsigned int *adrs = fff(tf->regs[rs]);
         u_int tmp = *adrs;
-        if (*adrs == *fff(tf->regs[rt])) {
-            *adrs = *fff(tf->regs[rd]);
+        if (*adrs == tf->regs[rt]) {
+            *adrs = tf->regs[rd];
         }
-        *fff(tf->regs[rd]) = tmp;
+        tf->regs[rd] = tmp;
     }
 
 

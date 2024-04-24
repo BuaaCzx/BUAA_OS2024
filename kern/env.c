@@ -85,7 +85,8 @@ static uint32_t asid_bitmap[NASID / 32] = {0};
 
 void env_stat(struct Env *e, u_int *pri, u_int *scheds, u_int *runs, u_int *clocks) {
 	*pri = e->env_pri;
-	
+	*runs = e->env_runs;
+	*scheds = e->env_scheds;
 }
 
 /* Overview:

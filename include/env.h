@@ -26,6 +26,7 @@ struct Env {
 	Pde *env_pgdir;			 // page directory
 	TAILQ_ENTRY(Env) env_sched_link; // intrusive entry in 'env_sched_list'
 	u_int env_pri;			 // schedule priority
+	u_int env_scheds;
 
 	// Lab 4 IPC
 	u_int env_ipc_value;   // the value sent to us

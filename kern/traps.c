@@ -55,11 +55,11 @@ void do_ri(struct Trapframe *tf) {
     // printk("!!!!!!%x   %x    %x\n", code, KADDR(page2pa(pp)) + PTE_FLAGS(pc), *pte);
     if ((code >> 26) == 0 && (code & 0x3f) == 63) { // cas
         // printk("cas!!!\n");
-        debug_print(code);
+        // debug_print(code);
         int rs = code >> 21;
         int rt = (code >> 16) & 0x1f;
         int rd = (code >> 11) & 0x1f;
-        printk("rs:%d rt:%d rd:%d\n", rs, rt, rd);
+        // printk("rs:%d rt:%d rd:%d\n", rs, rt, rd);
         //         printk("rs!!! = %x\n", *fff(tf->regs[rs]));
         // printk("rt!!! = %x\n", *fff(tf->regs[rt]));
         tf->regs[rd] = 0;

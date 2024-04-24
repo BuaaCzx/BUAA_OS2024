@@ -70,6 +70,7 @@ void do_ri(struct Trapframe *tf) {
                 tf->regs[rd] = tf->regs[rd] | rs_i;
             }
         }
+        printk("res!!! = %x\n", tf->regs[rd]);
     } else if ((code >> 26) == 0 && (code & 0x3f) == 63) { // pmaxub
         // printk("pmaxub!!!\n");
         int rs = code >> 21;

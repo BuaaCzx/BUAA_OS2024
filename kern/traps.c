@@ -33,7 +33,7 @@ void do_reserved(struct Trapframe *tf) {
 void do_ri(struct Trapframe *tf) {
 	// 你需要在此处实现问题描述的处理要求
     unsigned long pc = tf->cp0_epc;
-    unsigned long code = *KADDR(page2pa(page_lookup(curenv->env_pgdir, pc, NULL)));
+    unsigned int code = *(int*)KADDR(page2pa(page_lookup(curenv->env_pgdir, pc, NULL)));
     printk("!!!!!!%x\n", code);
     if ((code >> 26) == 0 && (code & 0x3f) == 62) { // cas
         printk("cas!!!\n");

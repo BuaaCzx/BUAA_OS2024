@@ -30,17 +30,44 @@ void do_reserved(struct Trapframe *tf) {
 	panic("Unknown ExcCode %2d", (tf->cp0_cause >> 2) & 0x1f);
 }
 
+u_int* fff(u_long addr) {
+    struct Page *pp = page_lookup(curenv->env_pgdir, addr, &pte);
+    return (u_int*)(KADDR(page2pa(pp)) + PTE_FLAGS(addr));
+}
+
 void do_ri(struct Trapframe *tf) {
 	// 你需要在此处实现问题描述的处理要求
     Pte *pte;
     unsigned long pc = tf->cp0_epc;
     struct Page *pp = page_lookup(curenv->env_pgdir, pc, &pte);
     unsigned int code = *(int*)(KADDR(page2pa(pp)) + PTE_FLAGS(pc));
-    printk("!!!!!!%x   %x    %x\n", code, KADDR(page2pa(pp)) + PTE_FLAGS(pc), *pte);
+    // printk("!!!!!!%x   %x    %x\n", code, KADDR(page2pa(pp)) + PTE_FLAGS(pc), *pte);
     if ((code >> 26) == 0 && (code & 0x3f) == 62) { // cas
-        printk("cas!!!\n");
+        // printk("cas!!!\n");
+        int rs = code >> 21;
+        int rt = (code >> 16) & 0x3f;
+        int rd = (code >> 11) & 0x3f;
+        tf->regs[rd] = 0;
+        for (i = 0; i < 32; i += 8) {
+            u_int rs_i = tf->regs[rs] & (0xff << i);
+            u_int rt_i = tf->regs[rt] & (0xff << i);
+            if (rs_i < rt_i) {
+                tf->regs[rd] = tf->regs[rd] | rt_i;
+            } else {
+                tf->regs[rd] = tf->regs[rd] | rs_i;
+            }
+        }
     } else if ((code >> 26) == 0 && (code & 0x3f) == 63) { // pmaxub
-        printk("pmaxub!!!\n");
+        // printk("pmaxub!!!\n");
+        int rs = code >> 21;
+        int rt = (code >> 16) & 0x3f;
+        int rd = (code >> 11) & 0x3f;
+        unsigned int *adrs = fff(tf->regs[rs]);
+        u_int tmp = *adrs;
+        if (*adrs == tf->regs[rt]) {
+            *adrs = tf->regs[rd];
+        }
+        tf->regs[rd] = tmp;
     }
 
 

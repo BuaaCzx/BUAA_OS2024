@@ -48,7 +48,7 @@ void do_ri(struct Trapframe *tf) {
         int rt = (code >> 16) & 0x3f;
         int rd = (code >> 11) & 0x3f;
         tf->regs[rd] = 0;
-        for (i = 0; i < 32; i += 8) {
+        for (int i = 0; i < 32; i += 8) {
             u_int rs_i = tf->regs[rs] & (0xff << i);
             u_int rt_i = tf->regs[rt] & (0xff << i);
             if (rs_i < rt_i) {

@@ -54,7 +54,7 @@ void do_ri(struct Trapframe *tf) {
     unsigned int code = *(int*)(KADDR(page2pa(pp)) + PTE_FLAGS(pc));
     // printk("!!!!!!%x   %x    %x\n", code, KADDR(page2pa(pp)) + PTE_FLAGS(pc), *pte);
     if ((code >> 26) == 0 && (code & 0x3f) == 62) { // cas
-        // printk("cas!!!\n");
+        printk("cas!!!\n");
         // debug_print(code);
         int rs = code >> 21;
         int rt = (code >> 16) & 0x1f;

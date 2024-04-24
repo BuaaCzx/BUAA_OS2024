@@ -18,8 +18,6 @@ void schedule(int yield) {
 	static int count = 0; // remaining time slices of current env
 	struct Env *e = curenv;
 
-	e->env_count += (e->env_tf).cp0_count;
-
 	/* We always decrease the 'count' by 1.
 	 *
 	 * If 'yield' is set, or 'count' has been decreased to 0, or 'e' (previous 'curenv') is
@@ -50,6 +48,7 @@ void schedule(int yield) {
 		e->env_scheds++;
 	}
 	count--;
+	e->env_count += (e->env_tf).cp0_count;
 	env_run(e);
 
 }

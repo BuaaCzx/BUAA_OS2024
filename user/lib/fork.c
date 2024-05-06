@@ -166,7 +166,7 @@ int fork(void) {
 	/* Exercise 4.15: Your code here. (1/2) */
 	for (int i = 0; i < VPN(USTACKTOP); i++) {
 		// debugf("### i = %d\n", i);
-		if ((vpd[i >> 10] & PTE_V) && (vpt[i] & PTE_V)) {
+		if ((vpd[i >> 12] & PTE_V) && (vpt[i] & PTE_V)) {
 			debugf("### i = %d\n", i);
 			duppage(child, i);
 			debugf("### success in loop!\n");

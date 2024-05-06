@@ -46,7 +46,7 @@ static void __attribute__((noreturn)) cow_entry(struct Trapframe *tf) {
 
 	// Step 6: Unmap the page at 'UCOW'.
 	/* Exercise 4.13: Your code here. (6/6) */
-	syscall_mem_unmap(0, va);
+	syscall_mem_unmap(0, UCOW);
 
 	// Step 7: Return to the faulting routine.
 	int r = syscall_set_trapframe(0, tf);

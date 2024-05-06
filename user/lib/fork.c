@@ -169,7 +169,7 @@ int fork(void) {
 		if ((vpd[i >> 10] & PTE_V) && (vpt[i] & PTE_V)) {
 			debugf("### i = %d\n", i);
 			duppage(child, i);
-			debugf("### success\n");
+			debugf("### success in loop!\n");
 		}
 	}
 

@@ -155,7 +155,7 @@ int fork(void) {
 		return 0;
 	}
 
-	debugf("### %d\n", child);
+	debugf("### child_id : %d\n", child);
 
 	/* Step 3: Map all mapped pages below 'USTACKTOP' into the child's address space. */
 	// Hint: You should use 'duppage'.

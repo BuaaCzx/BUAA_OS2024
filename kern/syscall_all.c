@@ -255,15 +255,20 @@ int sys_exofork(void) {
 
 	/* Step 1: Allocate a new env using 'env_alloc'. */
 	/* Exercise 4.9: Your code here. (1/4) */
+	try(env_alloc(&e, curenv->env_id));
 
 	/* Step 2: Copy the current Trapframe below 'KSTACKTOP' to the new env's 'env_tf'. */
 	/* Exercise 4.9: Your code here. (2/4) */
+	e->env_tf = *((struct Trapframe *)KSTACKTOP - 1);
 
 	/* Step 3: Set the new env's 'env_tf.regs[2]' to 0 to indicate the return value in child. */
 	/* Exercise 4.9: Your code here. (3/4) */
+	e->env_tf.regs[2] = 0;
 
 	/* Step 4: Set up the new env's 'env_status' and 'env_pri'.  */
 	/* Exercise 4.9: Your code here. (4/4) */
+	e->env_status = ENV_NOT_RUNNABLE;
+	e->env_pri = curenv->env_pri;
 
 	return e->env_id;
 }
@@ -423,6 +428,14 @@ int sys_ipc_try_send(u_int envid, u_int value, u_int srcva, u_int perm) {
 	if (srcva != 0) {
 		/* Exercise 4.8: Your code here. (8/8) */
 		try(sys_mem_map(curenv->env_id, srcva, e->env_id, curenv->env_ipc_dstva, perm));
+		/*
+		可能会寄，万一寄了可以考虑改成这个
+		p = page_lookup(curenv->env_pgdir, srcva, NULL);
+		if (p == NULL) {
+			return -E_INVAL;
+		}
+		try(page_insert(e->env_pgdir, e->env_asid, p, e->env_ipc_dstva, perm));
+		*/
 	}
 	return 0;
 }

@@ -96,29 +96,33 @@ static void duppage(u_int envid, u_int vpn) {
 	addr = vpn * PAGE_SIZE;
 	perm = PTE_FLAGS(vpt[vpn]);
 
+	debugf("### %d\n", addr);
+
 	/* Step 2: If the page is writable, and not shared with children, and not marked as COW yet,
 	 * then map it as copy-on-write, both in the parent (0) and the child (envid). */
 	/* Hint: The page should be first mapped to the child before remapped in the parent. (Why?)
 	 */
 	/* Exercise 4.10: Your code here. (2/2) */
-	// if ((perm & PTE_D) && !(perm & PTE_LIBRARY) && !(perm & PTE_COW)) {
-	// 	perm &= ~PTE_D;
-	// 	perm |= PTE_COW;
-	// 	syscall_mem_map(0, addr, envid, addr, perm);
-	// 	syscall_mem_map(0, addr, 0, addr, perm);
-	// }
-
-	int flag = 0;
-	if ((perm & PTE_D) && !(perm & PTE_LIBRARY)) {
-		perm = (perm & ~ PTE_D) | PTE_COW;
-		flag = 1;
-	}
-
-	syscall_mem_map(0, addr, envid, addr, perm);
-	
-	if (flag) {
+	if ((perm & PTE_D) && !(perm & PTE_LIBRARY) && !(perm & PTE_COW)) {
+		perm &= ~PTE_D;
+		perm |= PTE_COW;
+		syscall_mem_map(0, addr, envid, addr, perm);
 		syscall_mem_map(0, addr, 0, addr, perm);
 	}
+
+	debugf("### success\n");
+
+	// int flag = 0;
+	// if ((perm & PTE_D) && !(perm & PTE_LIBRARY)) {
+	// 	perm = (perm & ~ PTE_D) | PTE_COW;
+	// 	flag = 1;
+	// }
+
+	// syscall_mem_map(0, addr, envid, addr, perm);
+	
+	// if (flag) {
+	// 	syscall_mem_map(0, addr, 0, addr, perm);
+	// }
 	
 }
 

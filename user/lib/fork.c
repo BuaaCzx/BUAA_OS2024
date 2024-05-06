@@ -143,7 +143,9 @@ int fork(void) {
 	// Hint: You should use 'duppage'.
 	/* Exercise 4.15: Your code here. (1/2) */
 	for (int i = 0; i < VPN(USTACKTOP); i++) {
-		duppage(child, i);
+		if ((vpd[i >> 10] & PTE_V) && (vpt[i] & PTE_V)) {
+			duppage(child, i);
+		}
 	}
 
 	/* Step 4: Set up the child's tlb mod handler and set child's 'env_status' to

@@ -71,13 +71,32 @@ static void duppage(u_int envid, u_int vpn) {
 
 	/* Step 1: Get the permission of the page. */
 	/* Hint: Use 'vpt' to find the page table entry. */
+	/*
+	在MOS（可能是某种类似于MIT的操作系统课程中的教学操作系统）的OS内核中，`vpt` 和 `vpd` 这两个宏定义用于访问页表（Page Table）和页目录（Page Directory）。
+	这里的 `UVPT` 是一个常量，它代表了用户地址空间中的虚拟地址，该地址映射到内核页表。在许多操作系统中，内核会映射一部分自己的页表到用户地址空间，以便用户进程能够访问它，通常是用于实现系统调用或者访问某些内核数据结构。
+	`Pte` 和 `Pde` 分别代表了页表项（Page Table Entry）和页目录项（Page Directory Entry）的结构。这些项包含了关于虚拟地址到物理地址映射的信息，例如物理页号、访问权限等。
+	`PDX` 宏是一个用于从虚拟地址中提取页目录索引的宏，`PGSHIFT` 是一个常量，表示页大小的位移（在x86架构中通常是12，因为页大小是2^12即4KB）。
+	因此，这两个宏定义的作用是：
+	- `vpt` 宏定义了一个指向页表的常量、易变指针。这个指针可以用来访问和修改用户进程的页表项。
+	- `vpd` 宏定义了一个指向页目录的常量、易变指针。由于页目录紧跟在页表之后，所以这个指针是通过 `UVPT` 加上页目录的偏移量来计算的。这个偏移量是通过将 `UVPT` 的页目录索引（通过 `PDX` 宏获得）左移 `PGSHIFT` 位来得到的，这样就可以得到页目录的起始地址。
+	通过这两个宏，内核代码可以方便地访问和操作页表和页目录，以实现虚拟内存管理功能，例如地址翻译、权限检查、页表项的创建和删除等。
+
+	*/
 	/* Exercise 4.10: Your code here. (1/2) */
+	addr = vpn * PAGE_SIZE;
+	perm = PTE_FLAGS(vpt[vpn]);
 
 	/* Step 2: If the page is writable, and not shared with children, and not marked as COW yet,
 	 * then map it as copy-on-write, both in the parent (0) and the child (envid). */
 	/* Hint: The page should be first mapped to the child before remapped in the parent. (Why?)
 	 */
 	/* Exercise 4.10: Your code here. (2/2) */
+	if ((perm & PTE_D) && !(perm & PTE_LIBRARY) && !(perm & PTE_COW)) {
+		perm &= ~PTE_D;
+		perm |= PTE_COW;
+		syscall_mem_map(0, addr, envid, addr, perm);
+		syscall_mem_map(0, addr, envid, addr, perm);
+	}
 
 }
 

@@ -102,6 +102,8 @@ int sys_set_tlb_mod_entry(u_int envid, u_int func) {
 	/* Exercise 4.12: Your code here. (2/2) */
 	env->env_user_tlb_mod_entry = func;
 
+	printk("successfully set tlb_mod entry!\n");
+
 	return 0;
 }
 

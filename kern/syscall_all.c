@@ -122,6 +122,11 @@ static inline int is_illegal_va_range(u_long va, u_int len) {
  *   If 'va' is already mapped, that original page is sliently unmapped.
  *   'envid2env' should be used with 'checkperm' set, like in most syscalls, to ensure the target is
  * either the caller or its child.
+
+	分配一个物理页，并将'va'以'perm'权限映射到'envid'地址空间中。
+	如果'va'已经被映射，则原来的页会被默默地解除映射。
+	'envid2env'应该像大多数系统调用一样，设置'checkperm'，以确保目标是调用者或其子进程。
+
  *
  * Post-Condition:
  *   Return 0 on success.
@@ -139,13 +144,18 @@ int sys_mem_alloc(u_int envid, u_int va, u_int perm) {
 
 	/* Step 1: Check if 'va' is a legal user virtual address using 'is_illegal_va'. */
 	/* Exercise 4.4: Your code here. (1/3) */
+	if (!is_illegal_va(va)) {
+		return -E_INVAL;
+	}
 
 	/* Step 2: Convert the envid to its corresponding 'struct Env *' using 'envid2env'. */
 	/* Hint: **Always** validate the permission in syscalls! */
 	/* Exercise 4.4: Your code here. (2/3) */
+	try(envid2env(envid, &env, 1));
 
 	/* Step 3: Allocate a physical page using 'page_alloc'. */
 	/* Exercise 4.4: Your code here. (3/3) */
+	try(page_alloc(&pp));
 
 	/* Step 4: Map the allocated page at 'va' with permission 'perm' using 'page_insert'. */
 	return page_insert(env->env_pgdir, env->env_asid, pp, va, perm);

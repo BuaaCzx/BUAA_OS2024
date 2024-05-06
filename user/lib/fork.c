@@ -90,7 +90,6 @@ static void duppage(u_int envid, u_int vpn) {
 	- `vpt` 宏定义了一个指向页表的常量、易变指针。这个指针可以用来访问和修改用户进程的页表项。
 	- `vpd` 宏定义了一个指向页目录的常量、易变指针。由于页目录紧跟在页表之后，所以这个指针是通过 `UVPT` 加上页目录的偏移量来计算的。这个偏移量是通过将 `UVPT` 的页目录索引（通过 `PDX` 宏获得）左移 `PGSHIFT` 位来得到的，这样就可以得到页目录的起始地址。
 	通过这两个宏，内核代码可以方便地访问和操作页表和页目录，以实现虚拟内存管理功能，例如地址翻译、权限检查、页表项的创建和删除等。
-
 	*/
 	/* Exercise 4.10: Your code here. (1/2) */
 	// addr = vpn * PAGE_SIZE;
@@ -116,7 +115,7 @@ static void duppage(u_int envid, u_int vpn) {
 
 	int flag = 0;
 	if ((perm & PTE_D) && !(perm & PTE_LIBRARY)) {
-		perm = (perm & ~ PTE_D) | PTE_COW;
+		perm = (perm & ~PTE_D) | PTE_COW;
 		flag = 1;
 	}
 

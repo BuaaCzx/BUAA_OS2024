@@ -167,6 +167,7 @@ int fork(void) {
 	for (int i = 0; i < VPN(USTACKTOP); i++) {
 		// debugf("### i = %d\n", i);
 		if ((vpd[i >> 10] & PTE_V) && (vpt[i] & PTE_V)) {
+			debugf("i = %d\n", i);
 			duppage(child, i);
 		}
 	}

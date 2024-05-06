@@ -93,8 +93,10 @@ static void duppage(u_int envid, u_int vpn) {
 
 	*/
 	/* Exercise 4.10: Your code here. (1/2) */
-	addr = vpn * PAGE_SIZE;
-	perm = PTE_FLAGS(vpt[vpn]);
+	// addr = vpn * PAGE_SIZE;
+	addr = vpn << PGSHIFT;
+	perm = vpt[vpn] & 0xfff;
+	// perm = PTE_FLAGS(vpt[vpn]);
 
 	debugf("### %d\n", addr);
 

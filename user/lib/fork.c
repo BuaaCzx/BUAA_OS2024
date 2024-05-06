@@ -98,35 +98,35 @@ static void duppage(u_int envid, u_int vpn) {
 	perm = vpt[vpn] & 0xfff;
 	// perm = PTE_FLAGS(vpt[vpn]);
 
-	debugf("### %d\n", addr);
+	// debugf("### %d\n", addr);
 
 	/* Step 2: If the page is writable, and not shared with children, and not marked as COW yet,
 	 * then map it as copy-on-write, both in the parent (0) and the child (envid). */
 	/* Hint: The page should be first mapped to the child before remapped in the parent. (Why?)
 	 */
 	/* Exercise 4.10: Your code here. (2/2) */
-	// if ((perm & PTE_D) && !(perm & PTE_LIBRARY) && !(perm & PTE_COW)) {
-	// 	perm &= ~PTE_D;
-	// 	perm |= PTE_COW;
-	// 	syscall_mem_map(0, addr, envid, addr, perm);
-	// 	syscall_mem_map(0, addr, 0, addr, perm);
-	// }
-
-	
-
-	int flag = 0;
-	if ((perm & PTE_D) && !(perm & PTE_LIBRARY)) {
-		perm = (perm & ~ PTE_D) | PTE_COW;
-		flag = 1;
-	}
-
-	syscall_mem_map(0, addr, envid, addr, perm);
-	
-	if (flag) {
+	if ((perm & PTE_D) && !(perm & PTE_LIBRARY) && !(perm & PTE_COW)) {
+		perm &= ~PTE_D;
+		perm |= PTE_COW;
+		syscall_mem_map(0, addr, envid, addr, perm);
 		syscall_mem_map(0, addr, 0, addr, perm);
 	}
 
-	debugf("### success\n");
+	
+
+	// int flag = 0;
+	// if ((perm & PTE_D) && !(perm & PTE_LIBRARY)) {
+	// 	perm = (perm & ~ PTE_D) | PTE_COW;
+	// 	flag = 1;
+	// }
+
+	// syscall_mem_map(0, addr, envid, addr, perm);
+	
+	// if (flag) {
+	// 	syscall_mem_map(0, addr, 0, addr, perm);
+	// }
+
+	// debugf("### success\n");
 	
 }
 
@@ -161,8 +161,8 @@ int fork(void) {
 
 	debugf("### child_id : %d\n", child);
 
-	debugf("### %d\n", VPN(USTACKTOP));
-	debugf("### addr_range : %d-%d\n", UTEMP, UTOP);
+	// debugf("### %d\n", VPN(USTACKTOP));
+	// debugf("### addr_range : %d-%d\n", UTEMP, UTOP);
 
 	/* Step 3: Map all mapped pages below 'USTACKTOP' into the child's address space. */
 	// Hint: You should use 'duppage'.
@@ -170,9 +170,9 @@ int fork(void) {
 	for (int i = 0; i < VPN(USTACKTOP); i++) {
 		// debugf("### i = %d\n", i);
 		if ((vpd[i >> 10] & PTE_V) && (vpt[i] & PTE_V)) {
-			debugf("### i = %d\n", i);
+			// debugf("### i = %d\n", i);
 			duppage(child, i);
-			debugf("### success in loop!\n");
+			// debugf("### success in loop!\n");
 		}
 	}
 

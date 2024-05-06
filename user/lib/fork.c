@@ -138,7 +138,6 @@ int fork(void) {
 		env = envs + ENVX(syscall_getenvid());
 		return 0;
 	}
-	debugf("### %d\n", child);
 
 	/* Step 3: Map all mapped pages below 'USTACKTOP' into the child's address space. */
 	// Hint: You should use 'duppage'.
@@ -158,6 +157,9 @@ int fork(void) {
 	/* Exercise 4.15: Your code here. (2/2) */
 	try(syscall_set_tlb_mod_entry(child, cow_entry));
 	try(syscall_set_env_status(child, ENV_RUNNABLE));
+
+	
+	debugf("### %d\n", child);
 
 	return child;
 }

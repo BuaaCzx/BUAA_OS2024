@@ -166,7 +166,7 @@ int fork(void) {
 		}
 	}
 
-	debugf("### %d\n", child);
+	debugf("### child_id : %d\n", child);
 
 	/* Step 4: Set up the child's tlb mod handler and set child's 'env_status' to
 	 * 'ENV_RUNNABLE'. */
@@ -179,7 +179,7 @@ int fork(void) {
 	try(syscall_set_env_status(child, ENV_RUNNABLE));
 
 	
-	debugf("### %d\n", child);
+	debugf("### child_id : %d\n", child);
 
 	return child;
 }

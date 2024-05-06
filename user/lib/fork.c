@@ -162,6 +162,7 @@ int fork(void) {
 	debugf("### child_id : %d\n", child);
 
 	debugf("### %d\n", VPN(USTACKTOP));
+	debugf("### addr_range : %d-%d\n", UTEMP, UTOP);
 
 	/* Step 3: Map all mapped pages below 'USTACKTOP' into the child's address space. */
 	// Hint: You should use 'duppage'.

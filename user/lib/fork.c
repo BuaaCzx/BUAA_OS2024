@@ -159,7 +159,7 @@ int fork(void) {
 		return 0;
 	}
 
-	debugf("### child_id : %d\n", child);
+	debugf("### child_id1 : %d\n", child);
 
 	// debugf("### %d\n", VPN(USTACKTOP));
 	// debugf("### addr_range : %d-%d\n", UTEMP, UTOP);
@@ -176,7 +176,7 @@ int fork(void) {
 		}
 	}
 
-	debugf("### child_id : %d\n", child);
+	debugf("### child_id2 : %d\n", child);
 
 	/* Step 4: Set up the child's tlb mod handler and set child's 'env_status' to
 	 * 'ENV_RUNNABLE'. */
@@ -186,10 +186,13 @@ int fork(void) {
 	 */
 	/* Exercise 4.15: Your code here. (2/2) */
 	try(syscall_set_tlb_mod_entry(child, cow_entry));
+
+	debugf("### child_id3 : %d\n", child);
+
 	try(syscall_set_env_status(child, ENV_RUNNABLE));
 
 	
-	debugf("### child_id : %d\n", child);
+	debugf("### child_id4 : %d\n", child);
 
 	return child;
 }

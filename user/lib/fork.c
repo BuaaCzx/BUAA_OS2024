@@ -95,7 +95,7 @@ static void duppage(u_int envid, u_int vpn) {
 		perm &= ~PTE_D;
 		perm |= PTE_COW;
 		syscall_mem_map(0, addr, envid, addr, perm);
-		syscall_mem_map(0, addr, envid, addr, perm);
+		syscall_mem_map(0, addr, 0, addr, perm);
 	}
 
 }

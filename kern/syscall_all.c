@@ -144,7 +144,7 @@ int sys_mem_alloc(u_int envid, u_int va, u_int perm) {
 
 	/* Step 1: Check if 'va' is a legal user virtual address using 'is_illegal_va'. */
 	/* Exercise 4.4: Your code here. (1/3) */
-	if (!is_illegal_va(va)) {
+	if (is_illegal_va(va)) {
 		return -E_INVAL;
 	}
 
@@ -183,7 +183,7 @@ int sys_mem_map(u_int srcid, u_int srcva, u_int dstid, u_int dstva, u_int perm) 
 	/* Step 1: Check if 'srcva' and 'dstva' are legal user virtual addresses using
 	 * 'is_illegal_va'. */
 	/* Exercise 4.5: Your code here. (1/4) */
-	if (!is_illegal_va(srcva) || !is_illegal_va(dstva)) {
+	if (is_illegal_va(srcva) || is_illegal_va(dstva)) {
 		return -E_INVAL;
 	}
 
@@ -223,9 +223,13 @@ int sys_mem_unmap(u_int envid, u_int va) {
 
 	/* Step 1: Check if 'va' is a legal user virtual address using 'is_illegal_va'. */
 	/* Exercise 4.6: Your code here. (1/2) */
+	if (is_illegal_va(va)) {
+		return -E_INVAL;
+	}
 
 	/* Step 2: Convert the envid to its corresponding 'struct Env *' using 'envid2env'. */
 	/* Exercise 4.6: Your code here. (2/2) */
+	try(envid2env(envid, &e, 1));
 
 	/* Step 3: Unmap the physical page at 'va' in the address space of 'envid'. */
 	page_remove(e->env_pgdir, e->env_asid, va);

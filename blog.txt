@@ -1,0 +1,310 @@
+BUAA OS Lab4-1 课上测试 
+目录
+
+一、Exam部分
+（一）题目描述
+（二）题目理解与实现
+二、Extra部分
+（一）题目描述
+（二）题目理解与实现
+ 
+
+BUAA OS Lab4-1 课上测试
+回到顶部
+一、Exam部分
+（一）题目描述
+在本题中，内核需要面向所有进程维护一个公用的锁（下称锁）。对于用户程序，锁在同一时刻要么被唯一一个进程持有，要么不被任何进程持有（此时称锁处于空闲状态）。内核初始化时，锁应当处于空闲状态。
+
+为了在用户空间提供自旋锁机制，你需要实现以下两个用户函数：
+
+“检查并设置“锁
+/* user/lib.h */ 
+int syscall_try_acquire_console(void);
+若锁处于空闲状态，该函数设置锁由当前进程持有，并返回 0 ；否则，该函数返回 -1 。
+
+请注意：只要锁不处于空闲状态，即使锁已由当前进程持有，该函数也返回 -1 。
+
+释放锁
+/* user/lib.h */ 
+int syscall_release_console(void);
+若锁由当前进程持有，该函数设置锁为空闲状态，并返回 0 ，从而使当前进程不再持有锁。否则，该函数返回 -1 。
+
+为了实现这两个用户函数，你需要设计并添加相应的系统调用，保证这两个锁操作具有原子性，即不会被其他进程打断，导致多个进程持有锁。
+
+控制台输出锁保护
+为了在内核中控制控制台输出设备的使用，你需要修改 lib/syscall_all.c 中 sys_putchar 系统调用函数的实现，使得只有持有锁的进程才能向控制台输出字符。如果当前进程不持有锁，该函数应直接返回，不应输出任何内容。
+
+实现要求
+在 user/lib.h 中声明函数 int syscall_try_acquire_console();
+
+在 user/lib.h 中声明函数 int syscall_release_console();
+
+在 user/syscall_lib.c 中实现以上两个用户函数，发起系统调用
+
+修改相关文件，在内核中添加必要的系统调用，并维护必要的信息，以供用户函数使用。可能涉及的文件有：
+
+lib/syscall_all.c ：添加系统调用在内核中的实现函数
+
+lib/syscall.S ：将实现函数添加到系统调用入口向量表
+
+include/unistd.h ：定义系统调用号
+
+修改 lib/syscall_all.c 中的 sys_putchar 函数
+
+（二）题目理解与实现
+1. 新增系统调用
+很显然，题目需要我们新加两个系统调用，并修改原来的系统调用sys_putchar。
+
+经过课下部分的学习，我们知道，系统调用主要有以下过程：
+
+用户进程的某些函数需要内核级特权操作，通过用户空间的syscall_xxx发出系统调用，调用msyscall。(user/syscall_lib.c)
+
+msyscall(SYS_xxx, x, x, x, x, x)将相应的参数准备好（此时依然是用户空间），正式调用syscall。（user/syscall_wrap.S)
+
+syscall触发异常，开始进入内核态，进入异常分发入口except_vec3。（boot/start.S）
+
+发现是8号异常（系统调用），进入异常处理handle_sys（lib/syscall.S)
+
+准备好6个参数（压栈等等），根据系统调用号分发到相应的内核特权级操作函数sys_xxx（来提供用户进程想要的服务）(lib/syscall_all.c)
+
+内核服务结束，ret_from_exception (lib/genex.S)
+
+因此在新增加系统调用时，我们完全可以按照系统调用的处理过程来实现（题目中给出的实现要求也明确指出了）：
+
+用户空间，增加syscall_xxx（在user/lib.h中声明 在user/syscall_lib.c中实现）
+
+内核空间，增加系统调用号（include/unistd.h）
+
+内核空间，把相应的内核操作函数sys_xxx塞到系统调用入口向量表（lib/syscall.S的最下面那个table）
+
+内核空间，实现sys_xxx（lib/syscall_all.c）
+
+由此，我们便完成了新增系统调用。
+
+2. 锁
+根据题目的实现提示，“可以在内核中记录锁的相关状态，使内核中的系统调用函数能够确定当前持有锁的进程”，我们可以在内核中新增一个变量 int lock;来表示锁。（可以直接在lib/syscall_all.c中加入 方便系统调用使用）
+
+而对于这个变量，我们需要它能够表示：
+
+锁空闲 lock = 0;
+
+锁被某个进程占有 lock = envid;
+
+因此，为了使得lock能够唯一确定占有的进程，我们可以直接把envid赋值给lock。此外，由于envid不可能为0，因此我们可以使用lock = 0来表示锁空闲。由此，我们就能够准确表示锁的状态了。（我们把lock直接设置成全局变量，就可以实现内核初始化时lock为0了）
+
+有了锁的状态表示后，就能够比较容易地写出两个系统调用函数了。
+
+int sys_try_acquire_console() {
+    if (lock == 0) {
+        lock = curenv->env_id;
+        return 0;
+    }
+    else {
+        return -1;
+    }
+}
+​
+int sys_release_console() {
+    if (lock == curenv->env_id) {
+        lock = 0;
+        return 0;
+    }
+    else {
+        return -1;
+    }
+}
+而对于sys_putchar的锁保护，也可以通过锁的状态实现：
+
+void sys_putchar(int sysno, int c, int a2, int a3, int a4, int a5)
+{
+    if (lock != curenv->env_id) return;
+    printcharc((char) c);
+    return ;
+}
+回到顶部
+二、Extra部分
+（一）题目描述
+简单地说，就是IPC中，user/ipc.c中的ipc_send是一种轮询，直到接收方进入接收状态，我们要把这种轮询改掉，改成和ipc_recv一样的阻塞（OS与OO的完美结合）。
+
+void
+ipc_send(u_int whom, u_int val, u_int srcva, u_int perm)
+{
+    int r;
+    while ((r=syscall_ipc_can_send(whom, val, srcva, perm)) == -E_IPC_NOT_RECV) // 这里一直在轮询
+    {
+        syscall_yield();
+        //writef("QQ");
+    }
+    if(r == 0)
+        return;
+    user_panic("error in ipc_send: %d", r);
+}
+我们需要修改lib/syscall_all.c中的sys_ipc_can_send和sys_ipc_recv，使得ipc_send不用轮询，能够成为下面这个样子（突然清爽好多）：
+
+void ipc_send(u_int whom, u_int val, u_int srcva, u_int perm) { 
+    syscall_ipc_can_send(whom, val, srcva, perm); 
+}
+不用考虑各种非法的ipc行为，比如发送、接收进程不存在，srcva非法、perm非法等情况。
+
+实现提示（来自善良的助教们）
+可以参考当前对接收进程实现的阻塞机制，在接收进程进入接收状态前，让发送进程进入阻塞状态从而不被调度。在接收进程开始接收时，需要唤醒发送进程，并在接收过程中为其完成发送操作。这种情况下，接收进程不再需要被阻塞。
+
+发送进程进行发送时，如果接收进程已处于接收状态，则不需要阻塞发送进程，可如同课下实现直接发送。
+
+你可以将完成发送时传递数据的过程封装为单独的函数，并在发送和接收过程中调用，以处理以上的两种情况。
+
+在接收进程开始接收时，可能有多个进程都向其进行过发送，此时 sys_ipc_recv 仍应保证每次接收只选择一个发送进程，接收其数据并将其唤醒，而其余发送进程仍应处于阻塞状态，等待接收
+
+进程下一次调用 ipc_recv 。我们对这一接收顺序没有要求（可以与发送顺序不一致），但不应有发送的数据被遗漏。
+
+在阻塞一个发送进程时，你可能需要将描述本次发送的相关数据信息存储在内核中的缓冲区中，包括发送方和接收方的 envid，以及被发送的 value 、 srcva 和 perm 。开始接收时，你需要找到该接收进程对应的数据信息。
+
+你可以为每个未进入接收状态的进程准备一个接收队列，将来自每个发送进程的数据放入其中暂存。开始接收时，需要检查接收进程的接收队列是否为空。
+
+为了保证内存映射的正确性，请避免在 struct Env 中新增字段。你可以使用 ENVX 宏等方式获取进程控制块在 envs 中的下标，并使用独立的静态数组为每个进程在内核中维护必要的信息。
+
+经过如上的提醒，笔者梳理了以下几点：
+
+自己封装一个发送数据的函数，减小耦合
+
+不要改Env的结构体
+
+每个进程一个信息队列
+
+发送时，接收进程在接收状态，直接发
+
+发送时，接收进程不在接收状态，把信息塞到接收进程的信息队列，自己阻塞
+
+接收时，自己的队列里没有信息，自己阻塞，等别人发信息过来
+
+接收时，自己的队列里有信息，拿出一个信息，首先帮助发送者完成发送，其次唤醒被阻塞的发送者
+
+（二）题目理解与实现
+1. Message
+经过上面的梳理和实现提示，我们可以看到，发送的单位是“信息”，其中包含发送方、接收方的envid，value, perm, srcva，这么多东西，我们可以把它们打包成Message（OO课重现！）。
+
+struct Message {
+    int send_envid;
+    int recv_envid;
+    int value;
+    int perm;
+    int srcva;
+    LIST_ENTRY(Message) message_link;
+};
+2. 发送函数
+经过实现提示，我们可以实现一个发送数据的函数来降低耦合性。（可以参考原来的sys_ipc_can_send）
+
+int mysend(struct Message* m) {
+    int send_envid = m->send_envid;
+    int recv_envid = m->recv_envid;
+    int value = m->value;
+    int srcva = m->srcva;
+    int perm = m->perm;
+    struct Env* send_env, recv_env;
+    struct Page* p;
+    int r;
+    r = envid2env(send_envid, &send_env, 0);
+    if (r < 0) panic("cannot find send env");
+    r = envid2env(recv_envid, &recv_env, 0);
+    if (r < 0) panic("cannot find recv env");
+    if (recv->env_ipc_recving == 0) panic("recv env is not receiving");
+    recv->env_ipc_recving = 0;
+    recv->env_ipc_from = send_envid;
+    recv->env_ipc_value = value;
+    recv->env_ipc_perm = perm;
+    recv->env_status = ENV_RUNNABLE;
+    if (srcva != 0) {
+        Pte* pte;
+        p = page_lookup(send_env->env_pgdir, srcva, &pte);
+        if (p == 0) panic("cannot find page");
+        r = page_insert(recv_env->env_pgdir, p, recv_env->env_ipc_dstva, perm);
+        if (r < 0) panic("cannot insert page");
+    }
+    return 0;
+}
+需要注意的是，这个发送函数只负责发送信息和修改接收方的状态，不负责修改发送方的状态。
+
+3. 进程信息队列
+对于每个进程，需要存储它获得但未接收的信息。我们可以用LIST来实现。
+
+LIST_HEAD(Message_list, Message);
+struct Message_list message_buffer[NENV]; // 为了保险，每个进程控制块都来一个信息队列
+不要忘了初始化这些LIST，可以在env_init中实现。
+
+在lib/syscall_all.c中开一个Message的大数组作为备用的Message。
+
+struct Message messages[10000];
+int free_pos; // 指向下一个空闲的Message（每次记得free_pos++）
+如果想要往某个envid的信息队列里插入或拿出信息，可以通过ENVX宏和链表宏来实现：
+
+struct Message* m;
+// 插入信息队列
+LIST_INSERT_HEAD(&message_buffer[ENVX(envid)], m, message_link);
+// 取出信息
+m = LIST_FIRST(&message_buffer[ENVX(envid)]);
+LIST_REMOVE(m, message_link);
+完成进程信息队列，我们就可以开始快乐地写两个系统调用了。
+
+4. sys_ipc_can_send
+经过前面的梳理，我们知道，发送时主要有两种情况：
+
+接收进程已经进入接收状态，直接发送
+
+接收进程还未进入接收状态，把信息插入接收进程的信息队列，自己阻塞
+
+int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
+                     u_int perm) {
+    // 创建Message对象
+    struct Message* m;
+    m = &messages[free_pos];
+    free_pos++;
+    m->send_envid = curenv->env_id;
+    m->recv_envid = envid;
+    m->value = value;
+    m->srcva = srcva;
+    m->perm = perm;
+    struct Env* e;
+    envid2env(envid, &e, 0);
+    
+    if(e->env_ipc_recving == 1) { // 接收进程已经在接收状态了，直接发送
+        mysend(m);
+    } 
+    else { // 接收进程不在接收状态
+        int index = ENVX(m->recv_envid);
+        LIST_INSERT_HEAD(&message_buffer[index], m, message_link); // 加入信息队列
+        curenv->env_status = ENV_NOT_RUNNABLE; // 自己阻塞
+        sys_yield();
+    }
+    return 0;
+}
+5. sys_ipc_recv
+这个函数的功能主要是：
+
+当前信息队列为空，进入接收状态，自己阻塞
+
+当前信息队列不为空，取出一个信息发送，唤醒发送者
+
+void sys_ipc_recv(int sysno, u_int dstva) {
+    // 先设置好curenv的状态
+    curenv->env_ipc_dstva = dstva;
+    curenv->env_ipc_recving = 1; // mysend中会判断，因此需要置1
+    int index = ENVX(curenv->env_id);
+    if (LIST_EMPTY(&message_buffer[index])) { // 信息队列为空，自己阻塞
+        curenv->env_status = ENV_NOT_RUNNABLE;
+        sys_yield();
+    }
+    else { // 信息队列不为空
+        struct Message* m;
+        // 取出一个信息并发送
+        m = LIST_FIRST(&message_buffer[index]);
+        LIST_REMOVE(m, message_link);
+        mysend(m);
+        // 唤醒发送者
+        struct Env* e;
+        envid2env(m->send_envid, &e, 0);
+        e->env_status = ENV_RUNNABLE;
+    }
+}
+由此，我们便把轮询改好了！
+
+以上就是笔者对lab4-1课上测试的思路分享，如果有不足之处，烦请指正，谢谢！

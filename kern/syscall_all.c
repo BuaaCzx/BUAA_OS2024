@@ -10,6 +10,7 @@ extern struct Env *curenv;
 
 /* Overview:
  * 	This function is used to print a character on screen.
+	输出一个字符到屏幕
  *
  * Pre-Condition:
  * 	`c` is the character you want to print.

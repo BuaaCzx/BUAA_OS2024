@@ -36,6 +36,8 @@ int sys_msg_send(u_int envid, u_int value, u_int srcva, u_int perm) {
 	p = page_lookup(e->env_pgdir, srcva, NULL);
 	if (p != NULL) {
 		p->pp_ref++;
+	} else {
+		printk("srcva == NULL!!\n");
 	}
 	
 	m->msg_page = p;

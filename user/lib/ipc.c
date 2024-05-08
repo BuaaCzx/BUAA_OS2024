@@ -49,7 +49,7 @@ int sem_wait(int sem_id) {
 	while ((r = syscall_sem_wait(sem_id)) != -E_SEM_NOT_OPEN && r <= 0) {
 		syscall_yield();
 	}
-	return r;
+	return r == -E_SEM_NOT_OPEN ? r : 0;
 }
 
 int sem_post(int sem_id) {

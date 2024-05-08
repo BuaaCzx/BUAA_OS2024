@@ -193,7 +193,7 @@ int sys_set_tlb_mod_entry(u_int envid, u_int func) {
 /* Overview:
  *   Check 'va' is illegal or not, according to include/mmu.h
  */
-static inline int is_illegal_va(u_long va) {
+int is_illegal_va(u_long va) {
 	return va < UTEMP || va >= UTOP;
 }
 

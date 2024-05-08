@@ -30,14 +30,13 @@ int sys_msg_send(u_int envid, u_int value, u_int srcva, u_int perm) {
 	TAILQ_REMOVE(&msg_free_list, (m), msg_link);
 
 	m->msg_value = value;
-	m->msg_from = envid;
+	m->msg_from = curenv->env_id;
 	m->msg_perm = perm | PTE_V;
 
 	p = page_lookup(curenv->env_pgdir, srcva, NULL);
 	if (p != NULL) {
 		p->pp_ref++;
 	}
-	
 	
 	m->msg_page = p;
 

@@ -32,11 +32,10 @@ int sys_msg_send(u_int envid, u_int value, u_int srcva, u_int perm) {
 	m->msg_perm = perm | PTE_V;
 
 	p = page_lookup(e->env_pgdir, srcva, NULL);
-	if (p == NULL) {
-		return -E_INVAL;
+	if (p != NULL) {
+		p->pp_ref++;
 	}
-	p->pp_ref++;
-
+	
 	m->msg_page = p;
 
 	TAILQ_INSERT_TAIL(&e->env_msg_list, (m), msg_link);
@@ -55,9 +54,26 @@ int sys_msg_recv(u_int dstva) {
 		return -E_NO_MSG;
 	}
 
-	
-	
 	/* Your Code Here (2/3) */
+	m = TAILQ_FIRST(&curenv->env_msg_list);
+	TAILQ_REMOVE(&curenv->env_msg_list, (m), msg_link);
+
+	if (m->msg_page != NULL) {
+		if (dstva) {
+			page_insert(curenv->env_pgdir, curenv->env_asid, m->msg_page, dstva, m->msg_perm);
+		}
+	}
+
+	page_decref(m->msg_page);
+
+	curenv->env_msg_value = m->msg_value;
+	curenv->env_msg_from = m->msg_from;
+	curenv->env_msg_perm = m->msg_perm;
+
+	m->msg_status = MSG_RECV;
+	TAILQ_INSERT_TAIL(&msg_free_list, (m), msg_link);
+
+	return 0;
 }
 
 int sys_msg_status(u_int msgid) {
@@ -220,7 +236,7 @@ int sys_mem_alloc(u_int envid, u_int va, u_int perm) {
 	/* Exercise 4.4: Your code here. (3/3) */
 	try(page_alloc(&pp));
 
-	/* Step 4: Map the allocated page at 'va' with permission 'perm' using 'page_insert'. */
+	/* Step 4: Map the allocated page at 'va' with permission 'perm' using 'm'. */
 	return page_insert(env->env_pgdir, env->env_asid, pp, va, perm);
 }
 

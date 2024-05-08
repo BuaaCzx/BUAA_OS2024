@@ -38,6 +38,7 @@ int sys_msg_send(u_int envid, u_int value, u_int srcva, u_int perm) {
 		p->pp_ref++;
 	}
 	
+	
 	m->msg_page = p;
 
 	TAILQ_INSERT_TAIL(&e->env_msg_list, (m), msg_link);

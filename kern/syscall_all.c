@@ -64,9 +64,8 @@ int sys_msg_recv(u_int dstva) {
 		if (dstva) {
 			page_insert(curenv->env_pgdir, curenv->env_asid, m->msg_page, dstva, m->msg_perm);
 		}
+		page_decref(m->msg_page);
 	}
-
-	page_decref(m->msg_page);
 
 	curenv->env_msg_value = m->msg_value;
 	curenv->env_msg_from = m->msg_from;

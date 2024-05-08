@@ -25,8 +25,10 @@ int sys_sem_wait(int sem_id) {
 	if (!sems_valid[sem_id]) {
 		return -E_SEM_NOT_OPEN;
 	}
-	sems[sem_id]--;
-	return sems[sem_id] + 1;
+	if (sems[sem_id] == 0) {
+		return 0;
+	}
+	return sems[sem_id]--;
 }
 
 int sys_sem_post(int sem_id) {

@@ -6,6 +6,7 @@
 #include <sched.h>
 #include <syscall.h>
 #include <msg.h>
+#include <queue.h>
 
 extern struct Env *curenv;
 

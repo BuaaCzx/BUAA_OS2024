@@ -46,7 +46,7 @@ int sem_wait(int sem_id) {
 	int r;
 	// Lab 4-1-Exam: Your code here. (1/9)
 	// Implement process blocking
-	while ((r = syscall_sem_wait(sem_id)) != -E_SEM_NOT_OPEN && r > 0) {
+	while ((r = syscall_sem_wait(sem_id)) != -E_SEM_NOT_OPEN && r <= 0) {
 		syscall_yield();
 	}
 	return r;

@@ -67,18 +67,22 @@ int syscall_cgetc() {
 
 void syscall_sem_open(int sem_id, int n) {
 	// Lab 4-1-Exam: Your code here. (2/9)
+	sys_sem_open(semid, n);
 }
 
 int syscall_sem_wait(int sem_id) {
 	// Lab 4-1-Exam: Your code here. (3/9)
+	sys_sem_wait(sem_id);
 }
 
 int syscall_sem_post(int sem_id) {
 	// Lab 4-1-Exam: Your code here. (4/9)
+	sys_sem_post(sem_id);
 }
 
 int syscall_sem_kill(int sem_id) {
 	// Lab 4-1-Exam: Your code here. (5/9)
+	sys_sem_kill(sem_id);
 }
 
 int syscall_write_dev(void *va, u_int dev, u_int size) {

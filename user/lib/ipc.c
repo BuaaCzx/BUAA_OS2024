@@ -59,7 +59,3 @@ int sem_post(int sem_id) {
 int sem_kill(int sem_id) {
 	return syscall_sem_kill(sem_id);
 }
-
-int sem_decrease(int sem_id) {
-	return syscall_sem_decrease(sem_id);
-}

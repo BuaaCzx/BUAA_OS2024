@@ -22,6 +22,7 @@ void sys_sem_open(int sem_id, int n) {
 
 int sys_sem_wait(int sem_id) {
 	// Lab 4-1-Exam: Your code here. (7/9)
+	if ()
 }
 
 int sys_sem_post(int sem_id) {

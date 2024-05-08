@@ -46,7 +46,7 @@ int sem_wait(int sem_id) {
 	int r;
 	// Lab 4-1-Exam: Your code here. (1/9)
 	// Implement process blocking
-	
+	while ()
 	return r;
 }
 
@@ -56,4 +56,8 @@ int sem_post(int sem_id) {
 
 int sem_kill(int sem_id) {
 	return syscall_sem_kill(sem_id);
+}
+
+int sem_decrease(int sem_id) {
+	return syscall_sem_decrease(sem_id);
 }

@@ -85,6 +85,10 @@ int syscall_sem_kill(int sem_id) {
 	sys_sem_kill(sem_id);
 }
 
+int syscall_sem_decrease(int sem_id) { // -1, success return 1, else return 0;
+	sys_sem_decrease(sem_id);
+}
+
 int syscall_write_dev(void *va, u_int dev, u_int size) {
 	/* Exercise 5.2: Your code here. (1/2) */
 

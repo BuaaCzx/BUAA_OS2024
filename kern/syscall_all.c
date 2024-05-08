@@ -22,6 +22,26 @@ int sys_msg_send(u_int envid, u_int value, u_int srcva, u_int perm) {
 	}
 
 	/* Your Code Here (1/3) */
+	m = TAIQ_FIRST(&msg_free_list);
+	m->msg_tier++;
+	m->msg_status = MSG_SENT;
+	TAILQ_REMOVE(&msg_free_list, (m), msg_link);
+
+	m->msg_value = value;
+	m->msg_from = envid;
+	m->msg_perm = perm | PTE_V;
+
+	p = page_lookup(e->env_pgdir, srcva, NULL);
+	if (p == NULL) {
+		return -E_INVAL;
+	}
+	p->pp_ref++;
+
+	m->msg_page = p;
+
+	TAILQ_INSERT_TAIL(&e->env_msg_list, (m), msg_link);
+
+	return msg2id(m);
 }
 
 int sys_msg_recv(u_int dstva) {
@@ -34,6 +54,8 @@ int sys_msg_recv(u_int dstva) {
 	if (TAILQ_EMPTY(&curenv->env_msg_list)) {
 		return -E_NO_MSG;
 	}
+
+	
 	
 	/* Your Code Here (2/3) */
 }

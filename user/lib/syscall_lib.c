@@ -65,6 +65,22 @@ int syscall_cgetc() {
 	return msyscall(SYS_cgetc);
 }
 
+void syscall_sem_open(int sem_id, int n) {
+	// Lab 4-1-Exam: Your code here. (2/9)
+}
+
+int syscall_sem_wait(int sem_id) {
+	// Lab 4-1-Exam: Your code here. (3/9)
+}
+
+int syscall_sem_post(int sem_id) {
+	// Lab 4-1-Exam: Your code here. (4/9)
+}
+
+int syscall_sem_kill(int sem_id) {
+	// Lab 4-1-Exam: Your code here. (5/9)
+}
+
 int syscall_write_dev(void *va, u_int dev, u_int size) {
 	/* Exercise 5.2: Your code here. (1/2) */
 

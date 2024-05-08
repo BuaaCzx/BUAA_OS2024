@@ -80,6 +80,13 @@ int sys_msg_status(u_int msgid) {
 	struct Msg *m;
 
 	/* Your Code Here (3/3) */
+	m = msgs[MSGX(msgid)];
+	if (msg2id(m) == msgid) {
+		return m->msg_status;
+	} else if (msg2id(m) > msgid) {
+		return MSG_RECV;
+	}
+	return -E_INVAL;
 }
 
 /* Overview:

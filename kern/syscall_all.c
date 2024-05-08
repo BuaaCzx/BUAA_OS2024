@@ -34,7 +34,7 @@ int sys_msg_recv(u_int dstva) {
 	if (TAILQ_EMPTY(&curenv->env_msg_list)) {
 		return -E_NO_MSG;
 	}
-
+	
 	/* Your Code Here (2/3) */
 }
 

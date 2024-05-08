@@ -62,6 +62,7 @@ int sys_msg_recv(u_int dstva) {
 
 	if (m->msg_page != NULL) {
 		if (dstva) {
+			printk("### %x\n", dstva);
 			page_insert(curenv->env_pgdir, curenv->env_asid, m->msg_page, dstva, m->msg_perm);
 		}
 		page_decref(m->msg_page);

@@ -11,3 +11,8 @@
 `int sys_env_destroy(u_int envid)` : 杀死一个进程
 
 `int sys_mem_alloc(u_int envid, u_int va, u_int perm)` : 给进程envid的虚拟地址va分配一个物理页
+
+## vpd, vpt 的使用
+
+(vpt)[va >> PGSHIFT]       // 获得对应的页表项
+(vpd)[va >> PDSHIFT]       // 获得对应的页目录项

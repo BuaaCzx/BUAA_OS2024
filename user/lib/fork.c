@@ -94,10 +94,8 @@ static void duppage(u_int envid, u_int vpn) {
 	/* Exercise 4.10: Your code here. (1/2) */
 	// addr = vpn * PAGE_SIZE;
 	addr = vpn << PGSHIFT;
-	perm = vpt[vpn] & 0xfff;
+	perm = vpt[vpn] & 0xfff; // 直接去二级页表里找对应的页表项，获取 perm
 	// perm = PTE_FLAGS(vpt[vpn]);
-
-	// debugf("### %d\n", addr);
 
 	/* Step 2: If the page is writable, and not shared with children, and not marked as COW yet,
 	 * then map it as copy-on-write, both in the parent (0) and the child (envid). */
@@ -153,12 +151,10 @@ int fork(void) {
 	// Hint: You should use 'duppage'.
 	/* Exercise 4.15: Your code here. (1/2) */
 	for (int i = 0; i < VPN(USTACKTOP); i++) {
-		if ((vpd[i >> 10] & PTE_V) && (vpt[i] & PTE_V)) {
+		if ((vpd[i >> 10] & PTE_V) && (vpt[i] & PTE_V)) { // 一级页表：vpd，二级页表：vpt
 			duppage(child, i);
 		}
 	}
-
-	// debugf("### child_id2 : %d\n", child);
 
 	/* Step 4: Set up the child's tlb mod handler and set child's 'env_status' to
 	 * 'ENV_RUNNABLE'. */
@@ -169,12 +165,7 @@ int fork(void) {
 	/* Exercise 4.15: Your code here. (2/2) */
 	try(syscall_set_tlb_mod_entry(child, cow_entry));
 
-	// debugf("### child_id3 : %d\n", child);
-
 	try(syscall_set_env_status(child, ENV_RUNNABLE));
-
-	
-	// debugf("### child_id4 : %d\n", child);
 
 	return child;
 }

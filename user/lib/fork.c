@@ -82,7 +82,7 @@ static void duppage(u_int envid, u_int vpn) {
 	/* Step 1: Get the permission of the page. */
 	/* Hint: Use 'vpt' to find the page table entry. */
 	/*
-	在MOS（可能是某种类似于MIT的操作系统课程中的教学操作系统）的OS内核中，`vpt` 和 `vpd` 这两个宏定义用于访问页表（Page Table）和页目录（Page Directory）。
+	在MOS的OS内核中，`vpt` 和 `vpd` 这两个宏定义用于访问页表（Page Table）和页目录（Page Directory）。
 	这里的 `UVPT` 是一个常量，它代表了用户地址空间中的虚拟地址，该地址映射到内核页表。在许多操作系统中，内核会映射一部分自己的页表到用户地址空间，以便用户进程能够访问它，通常是用于实现系统调用或者访问某些内核数据结构。
 	`Pte` 和 `Pde` 分别代表了页表项（Page Table Entry）和页目录项（Page Directory Entry）的结构。这些项包含了关于虚拟地址到物理地址映射的信息，例如物理页号、访问权限等。
 	`PDX` 宏是一个用于从虚拟地址中提取页目录索引的宏，`PGSHIFT` 是一个常量，表示页大小的位移（在x86架构中通常是12，因为页大小是2^12即4KB）。
@@ -104,28 +104,24 @@ static void duppage(u_int envid, u_int vpn) {
 	/* Hint: The page should be first mapped to the child before remapped in the parent. (Why?)
 	 */
 	/* Exercise 4.10: Your code here. (2/2) */
-	// if ((perm & PTE_D) && !(perm & PTE_LIBRARY) && !(perm & PTE_COW)) {
-	// 	perm &= ~PTE_D;
-	// 	perm |= PTE_COW;
-	// 	syscall_mem_map(0, addr, envid, addr, perm);
-	// 	syscall_mem_map(0, addr, 0, addr, perm);
+	if ((perm & PTE_D) && !(perm & PTE_LIBRARY) && !(perm & PTE_COW)) {
+		perm &= ~PTE_D;
+		perm |= PTE_COW;
+		syscall_mem_map(0, addr, envid, addr, perm);
+		syscall_mem_map(0, addr, 0, addr, perm);
+	}
+
+	// int flag = 0;
+	// if ((perm & PTE_D) && !(perm & PTE_LIBRARY)) {
+	// 	perm = (perm & ~PTE_D) | PTE_COW;
+	// 	flag = 1;
 	// }
 
+	// syscall_mem_map(0, (void*)addr, envid, (void*)addr, perm);
 	
-
-	int flag = 0;
-	if ((perm & PTE_D) && !(perm & PTE_LIBRARY)) {
-		perm = (perm & ~PTE_D) | PTE_COW;
-		flag = 1;
-	}
-
-	syscall_mem_map(0, (void*)addr, envid, (void*)addr, perm);
-	
-	if (flag) {
-		syscall_mem_map(0, (void*)addr, 0, (void*)addr, perm);
-	}
-
-	// debugf("### success\n");
+	// if (flag) {
+	// 	syscall_mem_map(0, (void*)addr, 0, (void*)addr, perm);
+	// }
 	
 }
 
@@ -145,6 +141,7 @@ int fork(void) {
 	u_int i;
 
 	/* Step 1: Set our TLB Mod user exception entry to 'cow_entry' if not done yet. */
+	// 设置当前进程的 tlb mod 异常的入口（envid为0表示当前进程）
 	if (env->env_user_tlb_mod_entry != (u_int)cow_entry) {
 		try(syscall_set_tlb_mod_entry(0, cow_entry));
 	}
@@ -158,20 +155,12 @@ int fork(void) {
 		return 0;
 	}
 
-	// debugf("### child_id1 : %d\n", child);
-
-	// debugf("### %d\n", VPN(USTACKTOP));
-	// debugf("### addr_range : %d-%d\n", UTEMP, UTOP);
-
 	/* Step 3: Map all mapped pages below 'USTACKTOP' into the child's address space. */
 	// Hint: You should use 'duppage'.
 	/* Exercise 4.15: Your code here. (1/2) */
 	for (int i = 0; i < VPN(USTACKTOP); i++) {
-		// debugf("### i = %d\n", i);
 		if ((vpd[i >> 10] & PTE_V) && (vpt[i] & PTE_V)) {
-			// debugf("### i = %d\n", i);
 			duppage(child, i);
-			// debugf("### success in loop!\n");
 		}
 	}
 

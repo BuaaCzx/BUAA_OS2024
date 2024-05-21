@@ -9,6 +9,8 @@
 #define LOG2NENV 10
 #define NENV (1 << LOG2NENV)
 #define ENVX(envid) ((envid) & (NENV - 1))
+// 用法示例：struct Env *e = envs + ENVX(envid);
+// 获取一个envid对应的env进程块的位置
 
 // All possible values of 'env_status' in 'struct Env'.
 #define ENV_FREE 0

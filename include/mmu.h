@@ -14,6 +14,7 @@
 #define PDX(va) ((((u_long)(va)) >> PDSHIFT) & 0x03FF)
 #define PTX(va) ((((u_long)(va)) >> PGSHIFT) & 0x03FF)
 #define PTE_ADDR(pte) (((u_long)(pte)) & ~0xFFF)
+// 获取页表项之后，把页表项转换成物理地址
 #define PTE_FLAGS(pte) (((u_long)(pte)) & 0xFFF)
 
 // Page number field of an address

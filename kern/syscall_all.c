@@ -22,7 +22,7 @@ int sys_clone(void *func, void *child_stack) {
 	e->env_status = ENV_RUNNABLE;
 	TAILQ_INSERT_TAIL(&env_sched_list, e, env_sched_link);
 	// printk("sys_cloned, id is %d, env_cnt = %d!\n", e->env_id, p->env_cnt);
-	e->env_id += p->env_cnt;
+	e->env_id += p->env_cnt * 2;
 	return e->env_id;
 }
 

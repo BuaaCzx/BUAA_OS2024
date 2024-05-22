@@ -21,6 +21,7 @@ int sys_clone(void *func, void *child_stack) {
 	e->env_status = ENV_RUNNABLE;
 	TAILQ_INSERT_TAIL(&env_sched_list, e, env_sched_link);
 	// printk("sys_cloned!\n");
+	return e->env_id;
 }
 
 

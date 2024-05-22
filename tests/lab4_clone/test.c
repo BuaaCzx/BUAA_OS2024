@@ -14,7 +14,6 @@ static void os_assert(int cond, const char *err) {
 }
 
 void check() {
-	debugf("Into check!!\n");
 	while (!flag) {
 		syscall_yield();
 	}

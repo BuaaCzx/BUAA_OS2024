@@ -8,7 +8,7 @@
 
 extern struct Env *curenv;
 
-int syscall_clone(void *func, void *child_stack) {
+int sys_clone(void *func, void *child_stack) {
 	struct Page *p = pa2page(PADDR(curenv->env_pgdir));
 	if (p->env_cnt >= 64) {
 		return -E_ACT_ENV_NUM_EXCEED;

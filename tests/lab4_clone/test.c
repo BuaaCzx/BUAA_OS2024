@@ -29,7 +29,7 @@ void check() {
 int main() {
 	u_int child_stack = 0x7f3fd800;
 	syscall_clone((void *)check, (void *)child_stack);
-	printk("### cloned!!!");
+	debugf("### cloned!!!\n");
 	strcpy(buf, input);
 	flag = 1;
 	return 0;

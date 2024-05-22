@@ -28,4 +28,15 @@ void strace_send(int sysno) {
 
 void strace_recv() {
 	// Your code here. (2/2)
+	int sysno;
+	int child_env_id;
+	while(1) {
+		sysno = ipc_recv(&child_env_id, NULL, NULL);
+		strace_barrier(child_env_id);
+		recv_sysno(child_env_id, sysno);
+		syscall_set_env_status(child_env_id, ENV_NOT_RUNNABLE);
+		if (sysno == SYS_env_destroy) {
+			break;
+		}
+	}
 }

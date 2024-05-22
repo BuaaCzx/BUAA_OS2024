@@ -11,6 +11,7 @@ extern struct Env *curenv;
 int sys_clone(void *func, void *child_stack) {
 	struct Page *p = pa2page(PADDR(curenv->env_pgdir));
 	if (p->env_cnt >= 64) {
+		printk("clone error!\n");
 		return -E_ACT_ENV_NUM_EXCEED;
 	}
 	struct Env *e;

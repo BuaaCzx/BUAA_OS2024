@@ -43,7 +43,7 @@ void check2() {
 
 int main() {
 	u_int child_stack = 0x7f3fd800;
-	// syscall_clone((void *)check, (void *)child_stack);
+	syscall_clone((void *)check, (void *)child_stack);
 	syscall_clone((void *)check2, (void *)child_stack);
 	// syscall_clone((void *)check2, (void *)child_stack);
 	// debugf("### cloned!!!\n");

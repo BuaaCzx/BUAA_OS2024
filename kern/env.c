@@ -420,7 +420,8 @@ int env_clone(struct Env **new, u_int parent_id) {
 	// if (r = asid_alloc(&e->env_asid)) {
 	// 	return r;
 	// }
-	try(asid_alloc(&e->env_asid));
+	// try(asid_alloc(&e->env_asid));
+	e->env_asid = parent_env->env_asid;
 	e->env_id = parent_id;
 	e->env_parent_id = parent_id;
 

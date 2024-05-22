@@ -20,6 +20,7 @@ struct Page {
 	// do not have valid reference count fields.
 
 	u_short pp_ref;
+	int env_cnt;
 	// pp_ref 对应这一页物理内存被引用的次数，它等于有多少虚拟页映射到该物理页
 };
 

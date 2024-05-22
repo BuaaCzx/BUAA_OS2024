@@ -288,6 +288,10 @@ static int env_setup_vm(struct Env *e) {
 	*/
 	/* Exercise 3.3: Your code here. */
 	p->pp_ref++;
+
+	/*4-2-extra*/
+	p->env_cnt = 1;
+	
 	e->env_pgdir = page2kva(p);
 
 	/* Step 2: Copy the template page directory 'base_pgdir' to 'e->env_pgdir'. */
@@ -358,6 +362,66 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	// }
 	try(asid_alloc(&e->env_asid));
 	e->env_id = mkenvid(e);
+	e->env_parent_id = parent_id;
+
+	/* Step 4: Initialize the sp and 'cp0_status' in 'e->env_tf'.
+	 *   Set the EXL bit to ensure that the processor remains in kernel mode during context
+	 * recovery. Additionally, set UM to 1 so that when ERET unsets EXL, the processor
+	 * transitions to user mode.
+	 */
+	e->env_tf.cp0_status = STATUS_IM7 | STATUS_IE | STATUS_EXL | STATUS_UM;
+	// Reserve space for 'argc' and 'argv'.
+	e->env_tf.regs[29] = USTACKTOP - sizeof(int) - sizeof(char **);
+
+	/* Step 5: Remove the new Env from env_free_list. */
+	/* Exercise 3.4: Your code here. (4/4) */
+	LIST_REMOVE(e, env_link);
+
+	*new = e;
+	return 0;
+}
+
+int env_clone(struct Env **new, u_int parent_id) {
+	int r;
+	struct Env *e;
+
+	/* Step 1: Get a free Env from 'env_free_list' */
+	/* Exercise 3.4: Your code here. (1/4) */
+	if (LIST_EMPTY(&env_free_list)) {
+		return -E_NO_FREE_ENV;
+	}
+	e = LIST_FIRST(&env_free_list);
+
+	/* Step 2: Call a 'env_setup_vm' to initialize the user address space for this new Env. */
+	/* Exercise 3.4: Your code here. (2/4) */
+	// if ((r = env_setup_vm(e))) {
+	// 	return r;
+	// }
+	// try(env_setup_vm(e));
+	// env_setup_vm(e);
+	struct Env *parent_env;
+	try(envid2env(parent_id, &parent_env, 0));
+	e->env_pgdir = parent_env->env_pgdir;
+	struct Page *p = pa2page(PADDR(e->env_pgdir));
+	p->env_cnt++;
+
+
+	/* Step 3: Initialize these fields for the new Env with appropriate values:
+	 *   'env_user_tlb_mod_entry' (lab4), 'env_runs' (lab6), 'env_id' (lab3), 'env_asid' (lab3),
+	 *   'env_parent_id' (lab3)
+	 *
+	 * Hint:
+	 *   Use 'asid_alloc' to allocate a free asid.
+	 *   Use 'mkenvid' to allocate a free envid.
+	 */
+	e->env_user_tlb_mod_entry = 0; // for lab4
+	e->env_runs = 0;	       // for lab6
+	/* Exercise 3.4: Your code here. (3/4) */
+	// if (r = asid_alloc(&e->env_asid)) {
+	// 	return r;
+	// }
+	try(asid_alloc(&e->env_asid));
+	e->env_id = parent_id;
 	e->env_parent_id = parent_id;
 
 	/* Step 4: Initialize the sp and 'cp0_status' in 'e->env_tf'.
@@ -511,10 +575,17 @@ void env_free(struct Env *e) {
 		/* Hint: invalidate page table in TLB */
 		tlb_invalidate(e->env_asid, UVPT + (pdeno << PGSHIFT));
 	}
-	/* Hint: free the page directory. */
-	page_decref(pa2page(PADDR(e->env_pgdir)));
-	/* Hint: free the ASID */
-	asid_free(e->env_asid);
+
+	struct Page *p = pa2page(PADDR(e->env_pgdir));
+
+	p->env_cnt--;
+	if (p->env_cnt == 0) {
+		/* Hint: free the page directory. */
+		page_decref(pa2page(PADDR(e->env_pgdir)));
+		/* Hint: free the ASID */
+		asid_free(e->env_asid);
+	}
+
 	/* Hint: invalidate page directory in TLB */
 	tlb_invalidate(e->env_asid, UVPT + (PDX(UVPT) << PGSHIFT));
 	/* Hint: return the environment to the free list. */

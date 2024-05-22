@@ -38,7 +38,7 @@ void check2() {
 	} else {
 		os_assert(0, "They cannot share same memory!!!\n");
 	}
-	user_halt("child env ended\n");
+	debugf("child env ended\n");
 }
 
 int main() {

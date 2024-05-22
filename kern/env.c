@@ -553,6 +553,8 @@ void env_free(struct Env *e) {
 	/* Hint: Note the environment's demise.*/
 	printk("[%08x] free env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
 
+
+	struct Page *p = pa2page(PADDR(e->env_pgdir));
 	p->env_cnt--;
 	if (p->env_cnt == 0) {
 		/* Hint: Flush all mapped pages in the user portion of the address space */
@@ -577,10 +579,6 @@ void env_free(struct Env *e) {
 			/* Hint: invalidate page table in TLB */
 			tlb_invalidate(e->env_asid, UVPT + (pdeno << PGSHIFT));
 		}
-
-		struct Page *p = pa2page(PADDR(e->env_pgdir));
-
-	
 		/* Hint: free the page directory. */
 		page_decref(pa2page(PADDR(e->env_pgdir)));
 		/* Hint: free the ASID */

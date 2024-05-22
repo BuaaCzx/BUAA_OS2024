@@ -17,7 +17,7 @@ int sys_clone(void *func, void *child_stack) {
 	try(env_clone(&e, curenv->env_id));
 	e->env_tf = curenv->env_tf;
 	e->env_tf.regs[29] = child_stack;
-	e->env_tf.regs[31] = func; // ?
+	e->env_tf.cp0_epc = func; // ?
 	e->env_status = ENV_RUNNABLE;
 	TAILQ_INSERT_TAIL(&env_sched_list, e, env_sched_link);
 }

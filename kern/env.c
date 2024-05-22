@@ -399,8 +399,8 @@ int env_clone(struct Env **new, u_int parent_id) {
 	// }
 	// try(env_setup_vm(e));
 	// env_setup_vm(e);
-	struct Env *parent_env;
-	try(envid2env(parent_id, &parent_env, 0));
+	struct Env *parent_env = curenv;
+	// try(envid2env(parent_id, &parent_env, 0));
 	e->env_pgdir = parent_env->env_pgdir;
 	struct Page *p = pa2page(PADDR(e->env_pgdir));
 	p->env_cnt++;

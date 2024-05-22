@@ -8,6 +8,21 @@
 
 extern struct Env *curenv;
 
+int syscall_clone(void *func, void *child_stack) {
+	struct Page *p = pa2page(PADDR(curenv->env_pgdir));
+	if (p->env_cnt >= 64) {
+		return -E_ACT_ENV_NUM_EXCEED;
+	}
+	struct Env *e;
+	try(env_clone(&e, curenv->env_id));
+	e->env_tf = curenv->env_tf;
+	e->env_tf.regs[29] = child_stack;
+	e->env_tf.regs[31] = func; // ?
+	e->env_status = ENV_RUNNABLE;
+	TAILQ_INSERT_TAIL(&env_sched_list, e, env_sched_link);
+}
+
+
 /* Overview:
  * 	This function is used to print a character on screen.
 	输出一个字符到屏幕
@@ -539,6 +554,7 @@ void *syscall_table[MAX_SYSNO] = {
     [SYS_cgetc] = sys_cgetc,
     [SYS_write_dev] = sys_write_dev,
     [SYS_read_dev] = sys_read_dev,
+	[SYS_clone] = sys_clone,
 };
 
 /* Overview:

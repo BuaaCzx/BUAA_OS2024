@@ -11,7 +11,7 @@ extern struct Env *curenv;
 int sys_clone(void *func, void *child_stack) {
 	struct Page *p = pa2page(PADDR(curenv->env_pgdir));
 	if (p->env_cnt >= 64) {
-		printk("clone error!\n");
+		// printk("clone error!\n");
 		return -E_ACT_ENV_NUM_EXCEED;
 	}
 	struct Env *e;
@@ -21,7 +21,7 @@ int sys_clone(void *func, void *child_stack) {
 	e->env_tf.regs[31] = e->env_tf.cp0_epc = func; // ?
 	e->env_status = ENV_RUNNABLE;
 	TAILQ_INSERT_TAIL(&env_sched_list, e, env_sched_link);
-	printk("sys_cloned!\n");
+	printk("sys_cloned, id is !\n", e->env_id);
 	return e->env_id;
 }
 

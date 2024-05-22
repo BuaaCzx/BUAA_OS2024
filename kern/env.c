@@ -583,10 +583,10 @@ void env_free(struct Env *e) {
 		page_decref(pa2page(PADDR(e->env_pgdir)));
 		/* Hint: free the ASID */
 		asid_free(e->env_asid);
+		/* Hint: invalidate page directory in TLB */
+		tlb_invalidate(e->env_asid, UVPT + (PDX(UVPT) << PGSHIFT));
 	}
 
-	/* Hint: invalidate page directory in TLB */
-	tlb_invalidate(e->env_asid, UVPT + (PDX(UVPT) << PGSHIFT));
 	/* Hint: return the environment to the free list. */
 	e->env_status = ENV_FREE;
 	LIST_INSERT_HEAD((&env_free_list), (e), env_link);

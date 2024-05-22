@@ -27,11 +27,25 @@ void check() {
 	user_halt("child env ended\n");
 }
 
+void check2() {
+	debugf("into check2!\n");
+	while (!flag) {
+		syscall_yield();
+	}
+	int r = strcmp(input, buf);
+	if (r == 0) {
+		debugf("They share same memory!\n");
+	} else {
+		os_assert(0, "They cannot share same memory!!!\n");
+	}
+	user_halt("child env ended\n");
+}
+
 int main() {
 	u_int child_stack = 0x7f3fd800;
 	syscall_clone((void *)check, (void *)child_stack);
-	syscall_clone((void *)check, (void *)child_stack);
-	syscall_clone((void *)check, (void *)child_stack);
+	syscall_clone((void *)check2, (void *)child_stack);
+	syscall_clone((void *)check2, (void *)child_stack);
 	// debugf("### cloned!!!\n");
 	strcpy(buf, input);
 	flag = 1;

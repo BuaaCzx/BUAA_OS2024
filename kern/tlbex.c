@@ -38,6 +38,8 @@ static void passive_alloc(u_int va, Pde *pgdir, u_int asid) {
 		panic("kernel address");
 	}
 
+	printk("env %d try passive_alloc!\n", curenv->env_id);
+
 	panic_on(page_alloc(&p));
 	panic_on(page_insert(pgdir, asid, p, PTE_ADDR(va), (va >= UVPT && va < ULIM) ? 0 : PTE_D));
 }

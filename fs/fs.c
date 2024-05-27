@@ -179,7 +179,7 @@ void unmap_block(u_int blockno) {
 	/* Exercise 5.7: Your code here. (5/5) */
 	syscall_mem_unmap(0, va);
 
-	user_assert(!block_is_mappeir(blockno));
+	user_assert(!block_is_mapped(blockno));
 }
 
 // Overview:
@@ -205,7 +205,7 @@ void free_block(u_int blockno) {
 	// You can refer to the function 'block_is_free' above.
 	// Step 1: If 'blockno' is invalid (0 or >= the number of blocks in 'super'), return.
 	/* Exercise 5.4: Your code here. (1/2) */
-	if (blockno == 0 || block >= super->s_nblocks) {
+	if (blockno == 0 || blockno >= super->s_nblocks) {
 		return;
 	}
 	// Step 2: Set the flag bit of 'blockno' in 'bitmap'.

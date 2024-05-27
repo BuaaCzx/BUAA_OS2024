@@ -495,6 +495,20 @@ int sys_cgetc(void) {
  */
 int sys_write_dev(u_int va, u_int pa, u_int len) {
 	/* Exercise 5.1: Your code here. (1/2) */
+	if (len != 1 && len != 2 && len != 4) {
+		return -E_INVAL;
+	}
+	if (is_illegal_va_range(va, len)) {
+		return -E_INVAL;
+	}
+
+	if (len == 1) {
+		iowrite8(*(uint8_t *) va, pa);
+	} else if (len == 2) {
+		iowrite16(*(uint16_t *) va, pa);
+	} else if (len == 4) {
+		iowrite32(*(uint32_t *) va, pa);
+	}
 
 	return 0;
 }
@@ -516,6 +530,23 @@ int sys_write_dev(u_int va, u_int pa, u_int len) {
  */
 int sys_read_dev(u_int va, u_int pa, u_int len) {
 	/* Exercise 5.1: Your code here. (2/2) */
+	if (len != 1 && len != 2 && len != 4) {
+		return -E_INVAL;
+	}
+	if (is_illegal_va_range(va, len)) {
+		return -E_INVAL;
+	}
+
+	if (len == 1) {
+		uint8_t data = ioread8(pa);
+		*(uint8_t) va = data;
+	} else if (len == 2) {
+		uint16_t data = ioread16(pa);
+		*(uint16_t) va = data;
+	} else if (len == 4) {
+		uint32_t data = ioread32(pa);
+		*(uint32_t) va = data;
+	}
 
 	return 0;
 }

@@ -321,17 +321,17 @@ void read_bitmap(void) {
 //  Test that write_block works, by smashing the superblock and reading it back.
 void check_write_block(void) {
 	super = 0;
-	debugf("in!\n");
+	
 
 	// backup the super block.
 	// copy the data in super block to the first block on the disk.
 	panic_on(read_block(0, 0, 0));
 	memcpy((char *)disk_addr(0), (char *)disk_addr(1), BLOCK_SIZE);
-	debugf("out!\n");
+	
 
 	// smash it
-	strcpy((char *)disk_addr(1), "OOPS!\n");
-	write_block(1);
+	strcpy((char *)disk_addr(1), "OOPS!\n");debugf("in!\n");
+	write_block(1);debugf("out!\n");
 	user_assert(block_is_mapped(1));
 	debugf("1\n");
 

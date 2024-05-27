@@ -45,7 +45,7 @@ int open(const char *path, int mode) {
 	u_int size, fileid;
 	/* Exercise 5.9: Your code here. (3/5) */
 	va = fd2data(fd);
-	ffd = (Filefd *) fd;
+	ffd = (struct Filefd *) fd;
 	size = ffd->f_file.f_size;
 	fileid = ffd->f_fileid;
 

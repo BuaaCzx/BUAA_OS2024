@@ -177,7 +177,7 @@ void unmap_block(u_int blockno) {
 
 	// Step 3: Unmap the virtual address via syscall.
 	/* Exercise 5.7: Your code here. (5/5) */
-	syscall_mem_unmap(0, va);
+	syscall_mem_unmap(0, disk_addr(blockno));
 
 	user_assert(!block_is_mapped(blockno));
 }

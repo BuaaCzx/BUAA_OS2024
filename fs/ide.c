@@ -153,6 +153,7 @@ void ide_write(u_int diskno, u_int secno, void *src, u_int nsecs) {
 			/* Exercise 5.3: Your code here. (9/9) */
 			debugf("2\n");
 			memcpy((void*)(MALTA_IDE_DATA + 0xA0000000), src + i, 4);
+			debugf("3\n");
 		}
 
 		// Step 9: Check IDE status

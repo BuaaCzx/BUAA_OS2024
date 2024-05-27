@@ -21,6 +21,7 @@ int block_is_free(u_int);
 // Hint: Use 'DISKMAP' and 'BLOCK_SIZE' to calculate the address.
 void *disk_addr(u_int blockno) {
 	/* Exercise 5.6: Your code here. */
+	return DISKMAP + (blockno * BLOCK_SIZE);
 
 }
 
@@ -146,10 +147,15 @@ int map_block(u_int blockno) {
 	// Step 1: If the block is already mapped in cache, return 0.
 	// Hint: Use 'block_is_mapped'.
 	/* Exercise 5.7: Your code here. (1/5) */
+	if (block_is_mapped(blockno)) {
+		return 0;
+	}
 
 	// Step 2: Alloc a page in permission 'PTE_D' via syscall.
 	// Hint: Use 'disk_addr' for the virtual address.
 	/* Exercise 5.7: Your code here. (2/5) */
+	void *va = disk_addr(blockno);
+	return syscall_mem_alloc(0, va, PTE_D);
 
 }
 
@@ -159,14 +165,19 @@ void unmap_block(u_int blockno) {
 	// Step 1: Get the mapped address of the cache page of this block using 'block_is_mapped'.
 	void *va;
 	/* Exercise 5.7: Your code here. (3/5) */
+	va = block_is_mapped(blockno);
 
 	// Step 2: If this block is used (not free) and dirty in cache, write it back to the disk
 	// first.
 	// Hint: Use 'block_is_free', 'block_is_dirty' to check, and 'write_block' to sync.
 	/* Exercise 5.7: Your code here. (4/5) */
+	if (!block_is_free(blockno) && block_is_dirty(blockno)) {
+		write_block(blockno);
+	}
 
 	// Step 3: Unmap the virtual address via syscall.
 	/* Exercise 5.7: Your code here. (5/5) */
+	syscall_mem_unmap(0, va);
 
 	user_assert(!block_is_mapped(blockno));
 }

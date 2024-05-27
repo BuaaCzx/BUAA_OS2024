@@ -331,19 +331,23 @@ void check_write_block(void) {
 	strcpy((char *)disk_addr(1), "OOPS!\n");
 	write_block(1);
 	user_assert(block_is_mapped(1));
+	debugf("1\n");
 
 	// clear it out
 	panic_on(syscall_mem_unmap(0, disk_addr(1)));
 	user_assert(!block_is_mapped(1));
+	debugf("2\n");
 
 	// validate the data read from the disk.
 	panic_on(read_block(1, 0, 0));
 	user_assert(strcmp((char *)disk_addr(1), "OOPS!\n") == 0);
+	debugf("3\n");
 
 	// restore the super block.
 	memcpy((char *)disk_addr(1), (char *)disk_addr(0), BLOCK_SIZE);
 	write_block(1);
 	super = (struct Super *)disk_addr(1);
+	debugf("4\n");
 }
 
 // Overview:

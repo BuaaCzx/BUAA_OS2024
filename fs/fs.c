@@ -356,6 +356,7 @@ void fs_init(void) {
 	read_super();
 	check_write_block();
 	read_bitmap();
+	debugf("fs_init success!\n");
 }
 
 // Overview:

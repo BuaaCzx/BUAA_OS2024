@@ -205,6 +205,7 @@ int make_link_block(struct File *dirf, int nblk) {
 // Hint:
 //  Use 'make_link_block' to allocate a new block for the directory if there are no existing unused
 //  'File's.
+// 对代码较多疑问
 struct File *create_file(struct File *dirf) {
 	int nblk = dirf->f_size / BLOCK_SIZE;
 

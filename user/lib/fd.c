@@ -191,13 +191,20 @@ int read(int fdnum, void *buf, u_int n) {
 	struct Dev *dev;
 	struct Fd *fd;
 	/* Exercise 5.10: Your code here. (1/4) */
+	if ((r = fd_lookup(fdnum, &fd)) < 0 || (r = dev_lookup(fd->fd_dev_id, &dev)) < 0) {
+		return r;
+	}
 
 	// Step 2: Check the open mode in 'fd'.
 	// Return -E_INVAL if the file is opened for writing only (O_WRONLY).
 	/* Exercise 5.10: Your code here. (2/4) */
+	if ((fd->fd_omode & O_ACCMODE) == O_WRONLY) {
+		return -E_INVAL;
+	}
 
 	// Step 3: Read from 'dev' into 'buf' at the seek position (offset in 'fd').
 	/* Exercise 5.10: Your code here. (3/4) */
+	
 
 	// Step 4: Update the offset in 'fd' if the read is successful.
 	/* Hint: DO NOT add a null terminator to the end of the buffer!

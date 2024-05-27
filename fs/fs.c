@@ -83,6 +83,7 @@ void write_block(u_int blockno) {
 	void *va = disk_addr(blockno);
 	debugf("in ide_write\n");
 	ide_write(0, blockno * SECT2BLK, va, SECT2BLK);
+	debugf("out ide_write\n");
 }
 
 // Overview:

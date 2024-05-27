@@ -147,10 +147,11 @@ void ide_write(u_int diskno, u_int secno, void *src, u_int nsecs) {
 
 		// Step 7: Wait until the IDE is ready
 		temp = wait_ide_ready();
-
+		debugf("1\n");
 		// Step 8: Write the data to device
 		for (int i = 0; i < SECT_SIZE / 4; i++) {
 			/* Exercise 5.3: Your code here. (9/9) */
+			debugf("2\n");
 			memcpy((void*)(MALTA_IDE_DATA + 0xA0000000), src + i, 4);
 		}
 

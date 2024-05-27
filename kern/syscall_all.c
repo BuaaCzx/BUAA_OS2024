@@ -502,7 +502,7 @@ int sys_write_dev(u_int va, u_int pa, u_int len) {
 		return -E_INVAL;
 	}
 	//console: [0x180003F8, 0x18000418), disk: [0x180001F0, 0x180001F8)
-	if (!(0x180003F8 <= pa && pa + len < 0x18000418) && !(0x180001F0 <= pa && pa + len < 0x180001F8)) {
+	if (!(0x180003F8 <= pa && pa < 0x18000418) && !(0x180001F0 <= pa && pa < 0x180001F8)) {
 		return -E_INVAL;
 	}
 

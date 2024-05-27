@@ -204,6 +204,7 @@ int read(int fdnum, void *buf, u_int n) {
 
 	// Step 3: Read from 'dev' into 'buf' at the seek position (offset in 'fd').
 	/* Exercise 5.10: Your code here. (3/4) */
+	r = dev->dev_read(fd, buf, n, fd->fd_offset);
 	
 
 	// Step 4: Update the offset in 'fd' if the read is successful.
@@ -211,6 +212,9 @@ int read(int fdnum, void *buf, u_int n) {
 	 *  A character buffer is not a C string. Only the memory within [buf, buf+n) is safe to
 	 *  use. */
 	/* Exercise 5.10: Your code here. (4/4) */
+	if (r > 0) {
+		fd->fd_offset += r;
+	}
 
 	return r;
 }

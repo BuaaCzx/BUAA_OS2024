@@ -539,13 +539,13 @@ int sys_read_dev(u_int va, u_int pa, u_int len) {
 
 	if (len == 1) {
 		uint8_t data = ioread8(pa);
-		*(uint8_t) va = data;
+		*(uint8_t *) va = data;
 	} else if (len == 2) {
 		uint16_t data = ioread16(pa);
-		*(uint16_t) va = data;
+		*(uint16_t *) va = data;
 	} else if (len == 4) {
 		uint32_t data = ioread32(pa);
-		*(uint32_t) va = data;
+		*(uint32_t *) va = data;
 	}
 
 	return 0;

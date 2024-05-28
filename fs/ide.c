@@ -10,6 +10,10 @@
 /* Overview:
  *   Wait for the IDE device to complete previous requests and be ready
  *   to receive subsequent requests.
+	在磁盘读写的流程中，我们需要反复检查 IDE 设备是否已经就绪。这是由于 IDE 外设一般
+	不能立即完成数据操作，需要 CPU 检查 IDE 状态并等待操作完成。为此我们构建了一个检查
+	IDE 状态的帮手函数 wait_ide，用于等待 IDE 上的操作就绪。
+
  */
 static uint8_t wait_ide_ready() {
 	uint8_t flag;
@@ -147,13 +151,10 @@ void ide_write(u_int diskno, u_int secno, void *src, u_int nsecs) {
 
 		// Step 7: Wait until the IDE is ready
 		temp = wait_ide_ready();
-		// debugf("1\n");
+		
 		// Step 8: Write the data to device
 		for (int i = 0; i < SECT_SIZE / 4; i++) {
 			/* Exercise 5.3: Your code here. (9/9) */
-			// debugf("2\n");
-			// memcpy((void*)(MALTA_IDE_DATA + 0xA0000000), src + i, 4);
-			// debugf("3\n");
     		panic_on(syscall_write_dev(src + i * 4 + offset, MALTA_IDE_DATA, 4));
 		}
 

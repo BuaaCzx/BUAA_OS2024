@@ -373,6 +373,7 @@ void fs_init(void) {
 //  '*ppdiskbno' to point to that slot. The slot will be one of the f->f_direct[] entries,
 //  or an entry in the indirect block.
 //  When 'alloc' is set, this function will allocate an indirect block if necessary.
+// 找文件f中的第filebno个块对应的磁盘上的块的位置，这个函数是最底层的函数
 //
 // Post-Condition:
 //  Return 0 on success, and set *ppdiskbno to the pointer to the target block.
@@ -420,6 +421,7 @@ int file_block_walk(struct File *f, u_int filebno, uint32_t **ppdiskbno, u_int a
 // OVerview:
 //  Set *diskbno to the disk block number for the filebno'th block in file f.
 //  If alloc is set and the block does not exist, allocate it.
+// 找文件f的第filebno个块是存储在磁盘的哪个块（diskbno）上，返回这个块对应的指针
 //
 // Post-Condition:
 //  Returns 0: success, < 0 on error.
@@ -433,6 +435,7 @@ int file_map_block(struct File *f, u_int filebno, u_int *diskbno, u_int alloc) {
 	uint32_t *ptr;
 
 	// Step 1: find the pointer for the target block.
+	// 先尝试找一下文件上的这个块在哪里，返回对应块的指针 the pointer to the target block
 	if ((r = file_block_walk(f, filebno, &ptr, alloc)) < 0) {
 		return r;
 	}
@@ -474,6 +477,7 @@ int file_clear_block(struct File *f, u_int filebno) {
 
 // Overview:
 //  Set *blk to point at the filebno'th block in file f.
+// 读取文件f中的第filebno个块
 //
 // Hint: use file_map_block and read_block.
 //
@@ -484,12 +488,12 @@ int file_get_block(struct File *f, u_int filebno, void **blk) {
 	u_int diskbno;
 	u_int isnew;
 
-	// Step 1: find the disk block number is `f` using `file_map_block`.
+	// Step 1: find the disk block number is `f` using `file_map_block`. 先找对应的块，块的地址为diskbno
 	if ((r = file_map_block(f, filebno, &diskbno, 1)) < 0) {
 		return r;
 	}
 
-	// Step 2: read the data in this disk to blk.
+	// Step 2: read the data in this disk to blk. 
 	if ((r = read_block(diskbno, blk, &isnew)) < 0) {
 		return r;
 	}
@@ -511,7 +515,7 @@ int file_dirty(struct File *f, u_int offset) {
 
 // Overview:
 //  Find a file named 'name' in the directory 'dir'. If found, set *file to it.
-//
+//  查找某个目录下是否存在指定的文件
 // Post-Condition:
 //  Return 0 on success, and set the pointer to the target file in `*file`.
 //  Return the underlying error if an error occurs.
@@ -526,11 +530,11 @@ int dir_lookup(struct File *dir, char *name, struct File **file) {
 		// Read the i'th block of 'dir' and get its address in 'blk' using 'file_get_block'.
 		void *blk;
 		/* Exercise 5.8: Your code here. (2/3) */
-		try(file_get_block(dir, i, &blk));
+		try(file_get_block(dir, i, &blk)); // 先读这个块
 
-		struct File *files = (struct File *)blk;
+		struct File *files = (struct File *)blk; // 把这个块以文件的形式展开
 
-		// Find the target among all 'File's in this block.
+		// Find the target among all 'File's in this block.块里又有很多文件
 		for (struct File *f = files; f < files + FILE2BLK; ++f) {
 			// Compare the file name against 'name' using 'strcmp'.
 			// If we find the target file, set '*file' to it and set up its 'f_dir'

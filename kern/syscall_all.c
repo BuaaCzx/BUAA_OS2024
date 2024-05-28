@@ -493,6 +493,7 @@ int sys_cgetc(void) {
  *	|  IDE disk  | 0x180001f0 | 0x8    |
  *	* ---------------------------------*
  */
+ // 向内核虚拟地址（KSEG1）写len字节的数据
 int sys_write_dev(u_int va, u_int pa, u_int len) {
 	/* Exercise 5.1: Your code here. (1/2) */
 	if (len != 1 && len != 2 && len != 4) {
@@ -532,6 +533,7 @@ int sys_write_dev(u_int va, u_int pa, u_int len) {
  *  You can use 'is_illegal_va_range' to validate 'va'.
  *  You can use function 'ioread32', 'ioread16' and 'ioread8' to read data from device.
  */
+ // 从内核虚拟地址（KSEG1）pa里读len字节
 int sys_read_dev(u_int va, u_int pa, u_int len) {
 	/* Exercise 5.1: Your code here. (2/2) */
 	if (len != 1 && len != 2 && len != 4) {

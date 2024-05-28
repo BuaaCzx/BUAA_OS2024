@@ -26,8 +26,16 @@
 struct File {
 	char f_name[MAXNAMELEN]; // filename
 	uint32_t f_size;	 // file size in bytes
-	uint32_t f_type;	 // file type
+	uint32_t f_type;	 // file type 文件类型，有普通文件 (FTYPE_REG) 和目录 (FTYPE_DIR) 两种
 	uint32_t f_direct[NDIRECT];
+	/*
+		文件的直接指针，每个文件
+		控制块设有 10 个直接指针，用来记录文件的数据块在磁盘上的位置。每个磁盘块的大小为 4KB，
+		也就是说，这十个直接指针能够表示最大 40KB 的文件，而当文件的大小大于 40KB 时，就需要
+		用到间接指针。f_indirect 指向一个间接磁盘块，用来存储指向文件内容的磁盘块的指针。
+		对于普通的文件，其指向的磁盘块存储着文件内容，而对于目录文件来说，其指向的磁盘块
+		存储着该目录下各个文件对应的文件控制块。
+	*/
 	uint32_t f_indirect;
 
 	struct File *f_dir; // the pointer to the dir where this file is in, valid only in memory.
@@ -45,9 +53,9 @@ struct File {
 #define FS_MAGIC 0x68286097 // Everyone's favorite OS class
 
 struct Super {
-	uint32_t s_magic;   // Magic number: FS_MAGIC
-	uint32_t s_nblocks; // Total number of blocks on disk
-	struct File s_root; // Root directory node
+	uint32_t s_magic;   // Magic number: FS_MAGIC 魔数，为一个常量，用于标识该文件系统。
+	uint32_t s_nblocks; // Total number of blocks on disk 记录本文件系统有多少个磁盘块，在本文件系统中为 1024
+	struct File s_root; // Root directory node 根目录，其 f_type 为 FTYPE_DIR，f_name 为“/”。
 };
 
 #endif // _FS_H_

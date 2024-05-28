@@ -205,6 +205,7 @@ int read(int fdnum, void *buf, u_int n) {
 	// Step 3: Read from 'dev' into 'buf' at the seek position (offset in 'fd').
 	/* Exercise 5.10: Your code here. (3/4) */
 	r = dev->dev_read(fd, buf, n, fd->fd_offset);
+	// 从外设读，读进buf里
 	
 
 	// Step 4: Update the offset in 'fd' if the read is successful.
@@ -237,6 +238,7 @@ int readn(int fdnum, void *buf, u_int n) {
 	return tot;
 }
 
+// 把数据从缓冲区buf里写入文件
 int write(int fdnum, const void *buf, u_int n) {
 	int r;
 	struct Dev *dev;
@@ -250,7 +252,7 @@ int write(int fdnum, const void *buf, u_int n) {
 		return -E_INVAL;
 	}
 
-	r = dev->dev_write(fd, buf, n, fd->fd_offset);
+	r = dev->dev_write(fd, buf, n, fd->fd_offset); // 返回值是写了多少字节
 	if (r > 0) {
 		fd->fd_offset += r;
 	}

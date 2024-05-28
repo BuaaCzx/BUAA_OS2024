@@ -88,7 +88,7 @@ void write_block(u_int blockno) {
 
 // Overview:
 //  Make sure a particular disk block is loaded into memory.
-//
+// 把一个磁盘中的block加载到内存中，blk中返回内存中的地址
 // Post-Condition:
 //  Return 0 on success, or a negative error code on error.
 //
@@ -532,7 +532,7 @@ int dir_lookup(struct File *dir, char *name, struct File **file) {
 		/* Exercise 5.8: Your code here. (2/3) */
 		try(file_get_block(dir, i, &blk)); // 先读这个块
 
-		struct File *files = (struct File *)blk; // 把这个块以文件的形式展开
+		struct File *files = (struct File *)blk;// 其实是块里有很多文件，然后这个块的起始地址就是第一个文件的初始地址，强转一下，便于以后遍历整个文件
 
 		// Find the target among all 'File's in this block.块里又有很多文件
 		for (struct File *f = files; f < files + FILE2BLK; ++f) {

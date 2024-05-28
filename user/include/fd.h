@@ -30,8 +30,53 @@ struct Dev {
 	int (*dev_stat)(struct Fd *, struct Stat *);
 	int (*dev_seek)(struct Fd *, u_int);
 };
+/*
+int cons_read(struct Fd *fd, void *vbuf, u_int n, u_int offset) {
+	int c;
 
-// file descriptor
+	if (n == 0) {
+		return 0;
+	}
+
+	while ((c = syscall_cgetc()) == 0) {
+		syscall_yield();
+	}
+
+	if (c != '\r') {
+		debugf("%c", c);
+	} else {
+		debugf("\n");
+	}
+	if (c < 0) {
+		return c;
+	}
+	if (c == 0x04) { // ctl-d is eof
+		return 0;
+	}
+	*(char *)vbuf = c;
+	return 1;
+}
+
+int cons_write(struct Fd *fd, const void *buf, u_int n, u_int offset) {
+	int r = syscall_print_cons(buf, n);
+	if (r < 0) {
+		return r;
+	}
+	return n;
+}
+
+int cons_close(struct Fd *fd) {
+	return 0;
+}
+
+int cons_stat(struct Fd *fd, struct Stat *stat) {
+	strcpy(stat->st_name, "<cons>");
+	return 0;
+}
+
+*/
+
+// file descriptor 文件描述符
 struct Fd {
 	u_int fd_dev_id;
 	u_int fd_offset;

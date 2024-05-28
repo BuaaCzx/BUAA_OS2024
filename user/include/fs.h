@@ -42,6 +42,7 @@ struct File {
 	char f_pad[FILE_STRUCT_SIZE - MAXNAMELEN - (3 + NDIRECT) * 4 - sizeof(void *)];
 } __attribute__((aligned(4), packed));
 
+// 一个block里有多少个文件
 #define FILE2BLK (BLOCK_SIZE / sizeof(struct File))
 
 // File types

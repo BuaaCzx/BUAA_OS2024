@@ -167,7 +167,9 @@ void unmap_block(u_int blockno) {
 	// Step 1: Get the mapped address of the cache page of this block using 'block_is_mapped'.
 	void *va;
 	/* Exercise 5.7: Your code here. (3/5) */
-	va = block_is_mapped(blockno);
+	if (block_is_mapped(blockno)) {
+		return;
+	}
 
 	// Step 2: If this block is used (not free) and dirty in cache, write it back to the disk
 	// first.

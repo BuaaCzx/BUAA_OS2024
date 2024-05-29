@@ -143,7 +143,7 @@ int open_lookup(u_int envid, u_int fileid, struct Open **po) {
 void serve_open(u_int envid, struct Fsreq_open *rq) {
 	struct File *f;
 	struct Filefd *ff;
-	int r;
+	int r = 0;
 	struct Open *o;
 
 	// Find a file id.
@@ -160,6 +160,18 @@ void serve_open(u_int envid, struct Fsreq_open *rq) {
 
 	// Open the file.
 	if ((r = file_open(rq->req_path, &f)) < 0) {
+		ipc_send(envid, r, 0, 0);
+		return;
+	}
+
+	if (rq->req_omode == O_RDONLY && !(f->f_mode & FMODE_R)) {
+		r = -E_PERM_DENY;
+	} else if (rq->req_omode == O_WRONLY && !(f->f_mode & FMODE_W)) {
+		r = -E_PERM_DENY;
+	} else if (rq->req_omode == O_RDWR && !(f->f_mode & FMODE_RW)) {
+		r = -E_PERM_DENY;
+	}
+	if (r < 0) {
 		ipc_send(envid, r, 0, 0);
 		return;
 	}

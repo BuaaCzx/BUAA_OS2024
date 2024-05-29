@@ -520,6 +520,10 @@ int file_dirty(struct File *f, u_int offset) {
 //  Return 0 on success, and set the pointer to the target file in `*file`.
 //  Return the underlying error if an error occurs.
 int dir_lookup(struct File *dir, char *name, struct File **file) {
+	if (!(dir->f_mode & FMODE_X)) {
+		return -E_PERM_DENY;
+	}
+
 	// Step 1: Calculate the number of blocks in 'dir' via its size.
 	u_int nblock;
 	/* Exercise 5.8: Your code here. (1/3) */
@@ -700,10 +704,15 @@ int file_create(char *path, struct File **file) {
 		return r;
 	}
 
+	if (!(dir->f_mode & FMODE_W)) {
+		return -E_PERM_DENY;
+	}
+
 	if (dir_alloc_file(dir, &f) < 0) {
 		return r;
 	}
 
+	f->f_mode = FMODE_ALL;
 	strcpy(f->f_name, name);
 	*file = f;
 	return 0;
@@ -818,6 +827,10 @@ int file_remove(char *path) {
 	// Step 1: find the file on the disk.
 	if ((r = walk_path(path, 0, &f, 0)) < 0) {
 		return r;
+	}
+
+	if (!(f->f_dir->f_mode & FMODE_W)) {
+		return -E_PERM_DENY;
 	}
 
 	// Step 2: truncate it's size to zero.

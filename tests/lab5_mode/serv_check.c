@@ -28,13 +28,15 @@ int main() {
 		}
 	}
 
-	debugf("arrive here!\n");
+	debugf("arrive 1!\n");
 
 	if ((r = chmod("/newmotd", FMODE_W, 2)) < 0) {
 		_die("Cannot remove write permission of /newmotd: %d", r);
 	} else {
 		debugf("Removed write permisson of /newmotd\n");
 	}
+
+	debugf("arrive 2!\n");
 
 	stat("/newmotd", &stat_buf);
 	_die_if_not(stat_buf.st_mode == FMODE_R, "Wrong mode, expect %d but got %d", FMODE_R,

@@ -27,7 +27,7 @@ static int fsipc(u_int type, void *fsreq, void *dstva, u_int *perm) {
 }
 
 int fsipc_chmod(const char *path, u_int mode, int type) {
-	struct Fsreq_open *req;
+	struct Fsreq_chmod *req;
 
 	req = (struct Fsreq_chmod *)fsipcbuf;
 	strcpy(req->req_path, path);

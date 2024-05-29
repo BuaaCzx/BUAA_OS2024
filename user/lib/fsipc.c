@@ -38,7 +38,8 @@ int fsipc_chmod(const char *path, u_int mode, int type) {
 	strcpy(req->req_path, path);
 	req->req_mode = mode;
 	req->req_type = type;
-
+	
+	debugf("fsipc_chmod!\n");
 	return fsipc(FSREQ_CHMOD, req, 0, 0);
 
 }

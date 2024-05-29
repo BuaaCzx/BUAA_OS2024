@@ -32,7 +32,7 @@ int fsipc_copy(const char *src_path, const char *dst_path) {
 
 	req = (struct Fsreq_copy *)fsipcbuf;
 
-	if (strlen(src_path) >= MAXPATHLEN || strlen(dst_path) >= MAXPATHLEN || strlen(src_path) == 0 || strlen(dst_path) == 0) {
+	if (src_path == NULL || dst_path == NULL || strlen(src_path) >= MAXPATHLEN || strlen(dst_path) >= MAXPATHLEN || strlen(src_path) == 0 || strlen(dst_path) == 0) {
 		return -E_BAD_PATH;
 	}
 

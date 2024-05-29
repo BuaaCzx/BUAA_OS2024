@@ -168,7 +168,7 @@ void serve_open(u_int envid, struct Fsreq_open *rq) {
 		r = -E_PERM_DENY;
 	} else if (rq->req_omode == O_WRONLY && !(f->f_mode & FMODE_W)) {
 		r = -E_PERM_DENY;
-	} else if (rq->req_omode == O_RDWR && !(f->f_mode & FMODE_RW)) {
+	} else if (rq->req_omode == O_RDWR && (!(f->f_mode & FMODE_R) || !(f->f_mode & FMODE_W))) {
 		r = -E_PERM_DENY;
 	}
 	if (r < 0) {
@@ -330,7 +330,7 @@ void serve_chmod(u_int envid, struct Fsreq_chmod *rq) {
 		file->f_mode &= ~rq->req_mode;
 	}
 
-	debugf("%d\n", file->f_mode);
+	// debugf("%d\n", file->f_mode);
 
 	file_close(file);
 

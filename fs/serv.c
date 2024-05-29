@@ -65,8 +65,8 @@ void serve_copy(u_int envid, struct Fsreq_copy *rq){
    struct File *src;
    struct File *dst;
 
-   file_open(rq->src_path, &src);
-   file_open(rq->dst_path, &dst);
+   file_open(rq->req_src_path, &src);
+   file_open(rq->req_dst_path, &dst);
    
    r = copy_directory_contents(src, dst);
 

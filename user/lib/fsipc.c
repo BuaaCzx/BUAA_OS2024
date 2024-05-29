@@ -30,6 +30,11 @@ int fsipc_chmod(const char *path, u_int mode, int type) {
 	struct Fsreq_chmod *req;
 
 	req = (struct Fsreq_chmod *)fsipcbuf;
+
+	if (!path || strlen(path) >= MAXPATHLEN) {
+		return -E_BAD_PATH;
+	}
+
 	strcpy(req->req_path, path);
 	req->req_mode = mode;
 	req->req_type = type;

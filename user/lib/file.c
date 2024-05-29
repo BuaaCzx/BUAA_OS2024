@@ -20,7 +20,6 @@ struct Dev devfile = {
 };
 
 int chmod(const char *path, u_int mode, int type) {
-
 	return fsipc_chmod(path, mode, type);
 }
 

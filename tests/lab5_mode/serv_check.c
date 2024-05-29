@@ -28,6 +28,8 @@ int main() {
 		}
 	}
 
+	debugf("arrive here!\n");
+
 	if ((r = chmod("/newmotd", FMODE_W, 2)) < 0) {
 		_die("Cannot remove write permission of /newmotd: %d", r);
 	} else {

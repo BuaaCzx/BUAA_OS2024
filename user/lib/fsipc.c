@@ -26,6 +26,22 @@ static int fsipc(u_int type, void *fsreq, void *dstva, u_int *perm) {
 	return ipc_recv(&whom, dstva, perm);
 }
 
+int fsipc_copy(const char *src_path, const char *dst_path) {
+   // Lab 5-2-Exam: Your code here. (1/6)
+    struct Fsreq_copy *req;
+
+	req = (struct Fsreq_copy *)fsipcbuf;
+
+	if (strlen(src_path) >= MAXPATHLEN || strlen(dst_path) >= MAXPATHLEN || strlen(src_path) == 0 || strlen(dst_path) == 0) {
+		return -E_BAD_PATH;
+	}
+
+	strcpy(req->req_src_path, src_path);
+	strcpy(res->req_dst_path, dst_path);
+
+	return fsipc(FSREQ_COPY, req, 0, 0);
+}
+
 // Overview:
 //  Send file-open request to the file server. Includes path and
 //  omode in request, sets *fileid and *size from reply.

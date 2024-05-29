@@ -38,6 +38,9 @@ void _user_halt(const char *, int, const char *, ...) __attribute__((noreturn));
 		}                                                                                  \
 	} while (0)
 
+int copy(const char *src_path, const char *dst_path);
+int fsipc_copy(const char *,const char *);
+
 /// fork, spawn
 int spawn(char *prog, char **argv);
 int spawnl(char *prot, char *args, ...);

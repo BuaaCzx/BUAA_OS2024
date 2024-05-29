@@ -27,16 +27,20 @@ int copy_file_content(struct File *src, struct File *dst) {
 	  	void *blk_src;
 		void *blk_dst;
 		try(file_get_block(src, i, &blk_src));
-		try(file_get_block(dst, i, &blk_dst))
+		try(file_get_block(dst, i, &blk_dst));
 
-		struct File *files = (struct File *)blk;
+		memcpy(blk_dst, blk_src, src->f_size);
 
-		// Find the target among all 'File's in this block.块里又有很多文件
-		for (struct File *f = files; f < files + FILE2BLK; ++f) {
-			  struct File *new_file;
-			  try(dir_alloc_file(dst, &new_file));
-			  memcpy(new_file, f, sizeof(struct File));
-		}
+		file_dirty(dst, i * BLOCK_SIZE);
+
+		// struct File *files = (struct File *)blk;
+
+		// // Find the target among all 'File's in this block.块里又有很多文件
+		// for (struct File *f = files; f < files + FILE2BLK; ++f) {
+		// 	  struct File *new_file;
+		// 	  try(dir_alloc_file(dst, &new_file));
+		// 	  memcpy(new_file, f, sizeof(struct File));
+		// }
    }
    // Flush the changes to the destination file
    file_flush(dst);

@@ -23,9 +23,9 @@ static int fsipc(u_int type, void *fsreq, void *dstva, u_int *perm) {
 	u_int whom;
 	// Our file system server must be the 2nd env.
 	ipc_send(envs[1].env_id, type, fsreq, PTE_D);
-	if (type == FSREQ_CHMOD) {
-		debugf("fsipc chmod!\n");
-	}
+	// if (type == FSREQ_CHMOD) {
+	// 	debugf("fsipc chmod!\n");
+	// }
 	return ipc_recv(&whom, dstva, perm);
 }
 
@@ -42,7 +42,7 @@ int fsipc_chmod(const char *path, u_int mode, int type) {
 	req->req_mode = mode;
 	req->req_type = type;
 	
-	debugf("fsipc_chmod!\n");
+	// debugf("fsipc_chmod!\n");
 	return fsipc(FSREQ_CHMOD, req, 0, 0);
 }
 

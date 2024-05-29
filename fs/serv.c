@@ -308,7 +308,7 @@ void serve_remove(u_int envid, struct Fsreq_remove *rq) {
 }
 
 void serve_chmod(u_int envid, struct Fsreq_chmod *rq) {
-	debugf("serve_chmod!\n");
+	// debugf("serve_chmod!\n");
 
 	int r;
 
@@ -330,9 +330,11 @@ void serve_chmod(u_int envid, struct Fsreq_chmod *rq) {
 		file->f_mode &= ~rq->req_mode;
 	}
 
+	debugf("%h\n", file->f_mode);
+
 	file_close(file);
 
-	ipc_send(envid, 0, NULL, 0);
+	ipc_send(envid, 0, 0, 0);
 }
 
 /*

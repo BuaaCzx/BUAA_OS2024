@@ -317,18 +317,18 @@ void serve_chmod(u_int envid, struct Fsreq_chmod *rq) {
 		return;
 	}
 
-	if (type == 0) {
+	if (rq->req_type == 0) {
 		// 当 type 为 0 时，表示设置权限，直接设置文件权限为 mode。
 		file->f_mode = rq->req_mode;
-	} else if (type == 1) {
+	} else if (rq->req_type == 1) {
 		// add
 		file->f_mode |= rq->req_mode;
-	} else if (type == 2) {
+	} else if (rq->req_type == 2) {
 		// remove
 		file->f_mode &= ~rq->req_mode;
 	}
 
-	r = file_close(file);
+	file_close(file);
 
 	ipc_send(envid, r, NULL, 0);
 }

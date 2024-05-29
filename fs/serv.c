@@ -330,7 +330,7 @@ void serve_chmod(u_int envid, struct Fsreq_chmod *rq) {
 		file->f_mode &= ~rq->req_mode;
 	}
 
-	debugf("%h\n", file->f_mode);
+	debugf("%d\n", file->f_mode);
 
 	file_close(file);
 

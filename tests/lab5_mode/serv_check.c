@@ -36,8 +36,6 @@ int main() {
 		debugf("Removed write permisson of /newmotd\n");
 	}
 
-	debugf("arrive 2!\n");
-
 	stat("/newmotd", &stat_buf);
 	_die_if_not(stat_buf.st_mode == FMODE_R, "Wrong mode, expect %d but got %d", FMODE_R,
 		    stat_buf.st_mode);

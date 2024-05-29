@@ -16,6 +16,56 @@ uint32_t *bitmap;
 void file_flush(struct File *);
 int block_is_free(u_int);
 
+int copy_file_content(struct File *src, struct File *dst) {
+   void *src_blk, *dst_blk;
+   int r;
+   int nblock;
+   // Calculate the total number of blocks in the source file.
+   nblock = ROUND(src->f_size, BLOCK_SIZE) / BLOCK_SIZE;
+   for (u_int i = 0; i < nblock; i++) {
+      // Lab 5-2-Exam: Your code here. (3/6)
+	  	void *blk_src;
+		void *blk_dst;
+		try(file_get_block(src, i, &blk_src));
+		try(file_get_block(dst, i, &blk_dst))
+
+		struct File *files = (struct File *)blk;
+
+		// Find the target among all 'File's in this block.块里又有很多文件
+		for (struct File *f = files; f < files + FILE2BLK; ++f) {
+			  struct File *new_file;
+			  try(dir_alloc_file(dst, &new_file));
+			  memcpy(new_file, f, sizeof(struct File));
+		}
+   }
+   // Flush the changes to the destination file
+   file_flush(dst);
+   return 0;
+}
+/*
+	// Step 2: Iterate through all blocks in the directory.
+	for (int i = 0; i < nblock; i++) {
+		// Read the i'th block of 'dir' and get its address in 'blk' using 'file_get_block'.
+		void *blk;
+		try(file_get_block(dir, i, &blk)); // 先读这个块
+
+		struct File *files = (struct File *)blk;// 其实是块里有很多文件，然后这个块的起始地址就是第一个文件的初始地址，强转一下，便于以后遍历整个文件
+
+		// Find the target among all 'File's in this block.块里又有很多文件
+		for (struct File *f = files; f < files + FILE2BLK; ++f) {
+			// Compare the file name against 'name' using 'strcmp'.
+			// If we find the target file, set '*file' to it and set up its 'f_dir'
+			// field.
+			if (strcmp(name, f->f_name) == 0) {
+				*file = f;
+				f->f_dir = dir;
+				return 0;
+			}
+
+		}
+	}
+*/
+
 // Overview:
 //  Return the virtual address of this disk block in cache.
 // Hint: Use 'DISKMAP' and 'BLOCK_SIZE' to calculate the address.
@@ -524,6 +574,7 @@ int dir_lookup(struct File *dir, char *name, struct File **file) {
 	u_int nblock;
 	/* Exercise 5.8: Your code here. (1/3) */
 	nblock = dir->f_size / BLOCK_SIZE;
+	// nblock = ROUND(src->f_size, BLOCK_SIZE) / BLOCK_SIZE
 
 	// Step 2: Iterate through all blocks in the directory.
 	for (int i = 0; i < nblock; i++) {

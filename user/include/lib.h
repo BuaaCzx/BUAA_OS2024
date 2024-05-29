@@ -26,6 +26,9 @@ void debugf(const char *fmt, ...);
 void _user_panic(const char *, int, const char *, ...) __attribute__((noreturn));
 void _user_halt(const char *, int, const char *, ...) __attribute__((noreturn));
 
+int fsipc_chmod(const char *, u_int, int);
+int chmod(const char *path, u_int mode, int type);
+
 #define user_panic(...) _user_panic(__FILE__, __LINE__, __VA_ARGS__)
 #define user_halt(...) _user_halt(__FILE__, __LINE__, __VA_ARGS__)
 

@@ -19,6 +19,11 @@ struct Dev devfile = {
     .dev_stat = file_stat,
 };
 
+int chmod(const char *path, u_int mode, int type) {
+
+	return fsipc_chmod(path, mode, type);
+}
+
 // Overview:
 //  Open a file (or directory).
 //

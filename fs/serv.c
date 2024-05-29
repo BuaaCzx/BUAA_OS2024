@@ -295,6 +295,32 @@ void serve_remove(u_int envid, struct Fsreq_remove *rq) {
 
 }
 
+void serve_chmod(u_int envid, struct Fsreq_chmod *rq) {
+	int r;
+
+	struct File *file;
+	r = file_open(rq->req_path, &file);
+	if (r < 0) {
+		ipc_send(envid, r, NULL, 0);
+		return;
+	}
+
+	if (type == 0) {
+		// 当 type 为 0 时，表示设置权限，直接设置文件权限为 mode。
+		file->f_mode = rq->req_mode;
+	} else if (type == 1) {
+		// add
+		file->f_mode |= rq->req_mode;
+	} else if (type == 2) {
+		// remove
+		file->f_mode &= ~rq->req_mode;
+	}
+
+	r = file_close(file);
+
+	ipc_send(envid, r, NULL, 0);
+}
+
 /*
  * Overview:
  *  Serve to dirty the file.

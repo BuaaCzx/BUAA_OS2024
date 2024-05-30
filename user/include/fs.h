@@ -48,10 +48,10 @@ struct File {
 	uint32_t f_indirect;
 
 	
-	uint32_t f_mode;
+	
 	struct File *f_dir; // the pointer to the dir where this file is in, valid only in memory.
 
-	
+	uint32_t f_mode;
 	char f_pad[FILE_STRUCT_SIZE - MAXNAMELEN - (4 + NDIRECT) * 4 - sizeof(void *)];
 } __attribute__((aligned(4), packed));
 

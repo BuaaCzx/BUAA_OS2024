@@ -189,14 +189,14 @@ static int pipe_write(struct Fd *fd, const void *vbuf, u_int n, u_int offset) {
 	p = fd2data(fd);
 	wbuf = (char *)vbuf;
 	for (i = 0; i < n; i++) {
-		while (p->p_wpos - p->p_rpos >= BY2PIPE) {
+		while (p->p_wpos - p->p_rpos >= PIPE_SIZE) {
 			if (_pipe_is_closed(fd, p)) {
 				return i;
 			} else {
 				syscall_yield();
 			}
 		}
-		p->p_buf[p->p_wpos % BY2PIPE] = wbuf[i];
+		p->p_buf[p->p_wpos % PIPE_SIZE] = wbuf[i];
 		p->p_wpos++;
 	}
 

@@ -122,6 +122,7 @@ int spawn(char *prog, char **argv) {
 	int r;
 	u_char elfbuf[512];
 	/* Exercise 6.4: Your code here. (1/6) */
+	seek(fd, 0);
 	if ((r = readn(fd, elfbuf, sizeof(Elf32_Ehdr))) < 0 || r != sizeof(Elf32_Ehdr)) {
 		goto err;
 	}
@@ -141,6 +142,9 @@ int spawn(char *prog, char **argv) {
 	if (child < 0) {
 		r = child;
 		goto err;
+	} else if (child == 0) {
+		env = envs + ENVX(syscall_getenvid());
+		return 0;
 	}
 
 	// Step 4: Use 'init_stack(child, argv, &sp)' to initialize the stack of the child.

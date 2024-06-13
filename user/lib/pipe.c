@@ -157,8 +157,8 @@ static int pipe_read(struct Fd *fd, void *vbuf, u_int n, u_int offset) {
 		rbuf[i] = p->p_buf[p->p_rpos % PIPE_SIZE];
 		p->p_rpos++;
 	}
-
-	user_panic("pipe_read not implemented");
+	return n;
+	// user_panic("pipe_read not implemented");
 }
 
 /* Overview:
@@ -200,7 +200,7 @@ static int pipe_write(struct Fd *fd, const void *vbuf, u_int n, u_int offset) {
 		p->p_wpos++;
 	}
 
-	user_panic("pipe_write not implemented");
+	// user_panic("pipe_write not implemented");
 
 	return n;
 }

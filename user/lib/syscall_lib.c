@@ -74,3 +74,13 @@ int syscall_read_dev(void *va, u_int dev, u_int size) {
 	/* Exercise 5.2: Your code here. (2/2) */
 	return msyscall(SYS_read_dev, va, dev, size);
 }
+
+// challenge
+
+int syscall_get_sigaction(u_int envid, int signum, struct sigaction *addr) {
+	return msyscall(SYS_get_sigaction, envid, signum, addr);
+}
+
+int syscall_set_sigaction(u_int envid, int signum, struct sigaction *new_sigaction) {
+	return msyscall(SYS_set_sigaction, envid, signum, new_sigaction);
+}

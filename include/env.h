@@ -41,6 +41,11 @@ struct Env {
 
 	// Lab 6 scheduler counts
 	u_int env_runs; // number of times we've been env_run'ed
+
+	// challenge
+	u_int env_handlers[105];
+    sigset_t env_sa_mask;
+
 };
 
 LIST_HEAD(Env_list, Env);
@@ -73,5 +78,32 @@ void envid2env_check(void);
 		extern u_int binary_##x##_size;                                                    \
 		env_create(binary_##x##_start, (u_int)binary_##x##_size, 1);                       \
 	})
+
+// challenge
+
+typedef struct sigset_t {
+    uint32_t sig;
+} sigset_t;
+
+struct sigaction {
+    void     (*sa_handler)(int);
+    sigset_t   sa_mask;
+};
+
+#define SIGINT 2
+#define SIGKILL 4
+#define SIGKILL 9
+#define SIGSEGV 11
+#define SIGCHLD 17
+#define SIGSYS 31
+
+/*
+SIGINT	2	中断信号	停止进程
+SIGILL	4	非法指令	停止进程
+SIGKILL	9	停止进程信号	强制停止该进程，不可被阻塞
+SIGSEGV	11	访问地址错误，当访问[0, 0x003f_e000)内地址时	停止进程
+SIGCHLD	17	子进程终止信号	忽略
+SIGSYS	31	系统调用号未定义	忽略
+*/
 
 #endif // !_ENV_H_

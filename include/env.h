@@ -17,6 +17,39 @@
 #define ENV_RUNNABLE 1
 #define ENV_NOT_RUNNABLE 2
 
+// challenge
+
+typedef struct sigset_t {
+    uint32_t sig;
+} sigset_t;
+
+struct sigaction {
+    void     (*sa_handler)(int);
+    sigset_t   sa_mask;
+};
+
+#define SIGINT 2
+#define SIGKILL 4
+#define SIGKILL 9
+#define SIGSEGV 11
+#define SIGCHLD 17
+#define SIGSYS 31
+
+#define SIG_BLOCK 1
+#define SIG_UNBLOCK 2
+#define SIG_SETMASK 3
+
+/*
+SIGINT	2	中断信号	停止进程
+SIGILL	4	非法指令	停止进程
+SIGKILL	9	停止进程信号	强制停止该进程，不可被阻塞
+SIGSEGV	11	访问地址错误，当访问[0, 0x003f_e000)内地址时	停止进程
+SIGCHLD	17	子进程终止信号	忽略
+SIGSYS	31	系统调用号未定义	忽略
+*/
+
+// end_challenge
+
 // Control block of an environment (process).
 struct Env {
 	struct Trapframe env_tf;	 // saved context (registers) before switching
@@ -44,7 +77,13 @@ struct Env {
 
 	// challenge
 	u_int env_handlers[105];
-    sigset_t env_sa_mask;
+    sigset_t env_sa_mask; 
+	/*
+	当前的信号掩码。信号掩码（Signal Mask）是操作系统提供的一种机制，用于控制进程对接收特定信号的临时阻塞。
+	它定义了一组当前进程中被阻止递送到进程的信号集合。
+	当一个信号被设置在信号掩码中时，该信号不会立即传递给进程，直到从掩码中清除或进程特地检查并处理这些被阻塞的信号。
+	*/
+	sigset_t env_pending_sa; // 被阻塞且未处理的信号集
 
 };
 
@@ -79,31 +118,6 @@ void envid2env_check(void);
 		env_create(binary_##x##_start, (u_int)binary_##x##_size, 1);                       \
 	})
 
-// challenge
 
-typedef struct sigset_t {
-    uint32_t sig;
-} sigset_t;
-
-struct sigaction {
-    void     (*sa_handler)(int);
-    sigset_t   sa_mask;
-};
-
-#define SIGINT 2
-#define SIGKILL 4
-#define SIGKILL 9
-#define SIGSEGV 11
-#define SIGCHLD 17
-#define SIGSYS 31
-
-/*
-SIGINT	2	中断信号	停止进程
-SIGILL	4	非法指令	停止进程
-SIGKILL	9	停止进程信号	强制停止该进程，不可被阻塞
-SIGSEGV	11	访问地址错误，当访问[0, 0x003f_e000)内地址时	停止进程
-SIGCHLD	17	子进程终止信号	忽略
-SIGSYS	31	系统调用号未定义	忽略
-*/
 
 #endif // !_ENV_H_

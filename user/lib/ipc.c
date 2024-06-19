@@ -45,34 +45,13 @@ int sigaction(int signum, const struct sigaction *newact, struct sigaction *olda
 		return -1;
 	}
 
-	try(syscall_get_sigaction(0, signum, oldact));
+	if (oldact) {
+		oldact->sa_handler = env->env_handlers[signum];
+		oldact->sa_mask = env->env_sa_mask;
+	}
 
 	// TODO
-}
-
-/*
-signum:需要设置的信号编号。如之前所说你只需考虑signum 小于或等于32的情况，当收到编号大于32的信号时直接返回异常码-1即可。
-
-newact:为signum设置的sigaction结构体,如果newact不为空。
-
-oldact: 将该信号之前的sigaction结构体其内容填充到oldact中(如果oldact不为空)。
-
-int sigaction(int signum, const struct sigaction *act, struct sigaction *oldact) {
-    if (signum > 64 || signum < 1) {
-        return -1;
-    }
-    if (syscall_get_sig_act(0, signum, oldact) != 0) { 
-        //旧的信号处理结构体则需要在 `oldact != NULL` 时保存该指针在对应的地址空间中
-        return -1;
-    }
-    if (env_set_sig_entry() != 0) { //【注意这里的代码后续会解释！】
-        return -1;
-    }
-    return syscall_set_sig_act(0, signum, act);
-}
-
-int sigprocmask(int how, const sigset_t *set, sigset_t *oldset) {
-    return syscall_set_sig_set(0, how, set, oldset);
+	return syscall_set_sigaction(0, signum, newact);
 }
 
 int kill(u_int envid, int sig) {
@@ -80,4 +59,83 @@ int kill(u_int envid, int sig) {
     //向进程控制号编号为 `envid` 的进程发送 `sig` 信号
 }
 
-*/
+int sigemptyset(sigset_t *__set) {
+	if (__set) {
+		__set->sig = 0;
+	}
+	return 0;
+}
+// 清空参数中的__set掩码，初始化信号集以排除所有信号。这意味着__set将不包含任何信号。(清0)
+
+int sigfillset(sigset_t *__set) {
+	if (__set) {
+		__set->sig = ~0;
+	}
+	return 0;
+}
+// 将参数中的__set掩码填满，使其包含所有已定义的信号。这意味着__set将包括所有信号。(全为1)
+
+int sigaddset(sigset_t *__set, int __signo) {
+	if (__set) {
+		__set->sig |= 1 << (__signo - 1);
+	}
+	return 0;
+}
+// 向__set信号集中添加一个信号__signo。如果操作成功，__set将包含该信号。(置位为1)
+
+int sigdelset(sigset_t *__set, int __signo) {
+	if (__set) {
+		__set->sig &= ~(1 << (__signo - 1));
+	}
+	return 0;
+}
+// 从__set信号集中删除一个信号__signo。如果操作成功，__set将不再包含该信号。(置位为0)
+
+int sigismember(const sigset_t *__set, int __signo) {
+	return (__set->sig >> (__signo - 1)) & 1;
+}
+// 检查信号__signo是否是__set信号集的成员。如果是，返回1；如果不是，返回0。
+
+int sigisemptyset(const sigset_t *__set) {
+	return __set->sig == 0;
+}
+// 检查信号集__set是否为空。如果为空，返回1；如果不为空，返回0。
+
+int sigandset(sigset_t *__set, const sigset_t *__left, const sigset_t *__right) {
+	__set->sig = __left->sig & __right->sig;
+	return 0;
+}
+// 计算两个信号集__left和__right的交集，并将结果存储在__set中。
+
+int sigorset(sigset_t *__set, const sigset_t *__left, const sigset_t *__right) {
+	__set->sig = __left->sig | __right->sig;
+}
+// 计算两个信号集__left和__right的并集，并将结果存储在__set中。
+
+int sigprocmask(int __how, const sigset_t * __set, sigset_t * __oset) {
+	if (__oset) {
+		*__oset = env->env_sa_mask;
+	}
+	sigset_t __newset = env->env_sa_mask;
+	if (__how == SIG_BLOCK) {
+		sigorset(&__newset, &env->env_sa_mask, __set);
+	} else if (__how == SIG_UNBLOCK) {
+		for (int i = 1; i <= 32; i++) {
+			int fl = (__set->sig >> (i - 1)) & 1;
+			if (fl) {
+				sigdelset(&__newset, i);
+			}
+		}
+	} else if (__how == SIG_SETMASK) {
+		__newset = *__set;
+	}
+	sys_set_mask(0, __newset);
+	return 0;
+}
+// 根据__how的值更改当前进程的信号屏蔽字。__set是要应用的新掩码，__oset（如果非NULL）则保存旧的信号屏蔽字。
+// __how可以是SIG_BLOCK（添加__set到当前掩码）、SIG_UNBLOCK（从当前掩码中移除__set）、或SIG_SETMASK（设置当前掩码为__set）。
+
+int sigpending(sigset_t *__set) {
+	*__set = env->env_pending_sa;
+}
+// 获取当前被阻塞且未处理的信号集，并将其存储在__set中。

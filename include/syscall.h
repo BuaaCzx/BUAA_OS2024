@@ -24,6 +24,8 @@ enum {
 	SYS_read_dev,
 	SYS_get_sigaction, 
 	SYS_set_sigaction,
+	SYS_kill,
+	SYS_set_mask, 
 	MAX_SYSNO,
 };
 

@@ -585,8 +585,26 @@ int sys_set_sigaction(u_int envid, int signum, struct sigaction *new_sigaction) 
 		env->env_handlers[signum] = (u_int)new_sigaction->sa_handler;
 		env->env_sa_mask = new_sigaction->sa_mask;
 	}
+
 	return 0;
 }
+
+int sys_kill(u_int envid, int sig) {
+	struct Env *e;
+	try(envid2env(envid, &e, 0));
+	// TODO
+
+	return 0;
+}
+
+int sys_set_mask(u_int envid, sigset_t __newset) {
+	struct Env *e;
+	try(envid2env(envid, &e, 0));
+
+	e->env_sa_mask = __newset;
+
+	return 0;
+} 
 
 void *syscall_table[MAX_SYSNO] = {
     [SYS_putchar] = sys_putchar,
@@ -609,6 +627,8 @@ void *syscall_table[MAX_SYSNO] = {
     [SYS_read_dev] = sys_read_dev,
 	[SYS_get_sigaction] = sys_get_sigaction, 
 	[SYS_set_sigaction] = sys_set_sigaction, 
+	[SYS_kill] = sys_kill,
+	[SYS_set_mask] = sys_set_mask, 
 };
 
 /* Overview:

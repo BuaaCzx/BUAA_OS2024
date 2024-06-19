@@ -84,3 +84,11 @@ int syscall_get_sigaction(u_int envid, int signum, struct sigaction *addr) {
 int syscall_set_sigaction(u_int envid, int signum, struct sigaction *new_sigaction) {
 	return msyscall(SYS_set_sigaction, envid, signum, new_sigaction);
 }
+
+int syscall_kill(u_int envid, int sig) {
+	return msyscall(SYS_kill, envid, sig);
+}
+
+int sys_set_mask(u_int envid, sigset_t __newset) {
+	return msyscall(SYS_set_mask, envid, __newset);
+} 

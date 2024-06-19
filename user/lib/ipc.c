@@ -46,8 +46,7 @@ int sigaction(int signum, const struct sigaction *newact, struct sigaction *olda
 	}
 
 	if (oldact) {
-		oldact->sa_handler = env->env_handlers[signum];
-		oldact->sa_mask = env->env_sa_mask;
+		*oldact = env->env_sigactions[signum];
 	}
 
 	// TODO

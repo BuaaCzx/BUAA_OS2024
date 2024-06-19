@@ -76,8 +76,8 @@ struct Env {
 	u_int env_runs; // number of times we've been env_run'ed
 
 	// challenge
-	u_int env_handlers[105];
-    sigset_t env_sa_mask; 
+	struct sigaction env_sigactions[35];
+    sigset_t env_sa_mask;
 	/*
 	当前的信号掩码。信号掩码（Signal Mask）是操作系统提供的一种机制，用于控制进程对接收特定信号的临时阻塞。
 	它定义了一组当前进程中被阻止递送到进程的信号集合。

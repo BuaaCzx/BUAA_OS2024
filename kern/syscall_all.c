@@ -570,8 +570,7 @@ int sys_get_sigaction(u_int envid, int signum, struct sigaction *addr) {
 	try(envid2env(envid, &e, 0));
 
 	if (addr) {
-		addr->sa_handler = (void *)env->env_handlers[signum];
-		addr->sa_mask = env->env_sa_mask;
+		*addr = env->env_sigactions[signum];
 	}
 
 	return 0;
@@ -582,8 +581,7 @@ int sys_set_sigaction(u_int envid, int signum, struct sigaction *new_sigaction) 
 	try(envid2env(envid, &e, 0));
 
 	if (new_sigaction) {
-		env->env_handlers[signum] = (u_int)new_sigaction->sa_handler;
-		env->env_sa_mask = new_sigaction->sa_mask;
+		env->env_sigactions[signum] = *new_sigaction;
 	}
 
 	return 0;

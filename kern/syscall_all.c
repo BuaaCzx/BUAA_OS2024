@@ -592,8 +592,7 @@ int sys_set_sigaction(u_int envid, int signum, struct sigaction *new_sigaction) 
 int sys_kill(u_int envid, int sig) {
 	struct Env *e;
 	try(envid2env(envid, &e, 0));
-	// TODO
-
+	e->env_pending_sa.sig |= 1 << (sig - 1); // 不知道是不是这样写
 	return 0;
 }
 

@@ -581,7 +581,7 @@ int sys_set_sigaction(u_int envid, int signum, struct sigaction *new_sigaction) 
 	try(envid2env(envid, &e, 0));
 
 	if (new_sigaction) {
-		env->env_sigactions[signum] = *new_sigaction;
+		e->env_sigactions[signum] = *new_sigaction;
 	}
 
 	return 0;

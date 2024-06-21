@@ -570,7 +570,7 @@ int sys_get_sigaction(u_int envid, int signum, struct sigaction *addr) {
 	try(envid2env(envid, &e, 0));
 
 	if (addr) {
-		*addr = env->env_sigactions[signum];
+		*addr = e->env_sigactions[signum];
 	}
 
 	return 0;

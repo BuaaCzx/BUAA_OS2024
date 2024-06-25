@@ -49,14 +49,14 @@ int sigaction(int signum, const struct sigaction *newact, struct sigaction *olda
 		return -1;
 	}
 	try(syscall_set_sig_entry(0, (u_int) sig_entry));
-	return syscall_sigaction(0, signum, newact, oldact);
+	return syscall_sigaction(0, signum, newact, oldact) < 0 ? -1 : 0;
 }
 
 int kill(u_int envid, int sig){
 	if (is_illegal_sig(sig)) {
 		return -1;
 	}
-	return syscall_kill(envid, sig);
+	return syscall_kill(envid, sig) < 0 ? -1 : 0;
 }
 
 int sigemptyset(sigset_t *__set) {
@@ -134,7 +134,7 @@ int sigorset(sigset_t *__set, const sigset_t *__left, const sigset_t *__right) {
 // 计算两个信号集__left和__right的并集，并将结果存储在__set中。
 
 int sigprocmask(int __how, const sigset_t * __set, sigset_t * __oset) {
-	return syscall_proc_mask(__how, __set, __oset);
+	return syscall_proc_mask(__how, __set, __oset) < 0 ? -1 : 0;
 }
 // 根据__how的值更改当前进程的信号屏蔽字。__set是要应用的新掩码，__oset（如果非NULL）则保存旧的信号屏蔽字。
 // __how可以是SIG_BLOCK（添加__set到当前掩码）、SIG_UNBLOCK（从当前掩码中移除__set）、或SIG_SETMASK（设置当前掩码为__set）。
@@ -143,6 +143,6 @@ int sigpending(sigset_t *__set) {
 	if (!__set) {
 		return -1;
 	}
-	return syscall_get_pending(__set);
+	return syscall_get_pending(__set) < 0 ? -1 : 0;
 }
 // 获取当前被阻塞且未处理的信号集，并将其存储在__set中。

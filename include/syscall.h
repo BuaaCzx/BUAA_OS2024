@@ -26,6 +26,8 @@ enum {
 	SYS_kill,
 	SYS_proc_mask, 
 	SYS_get_pending, 
+	SYS_set_sig_entry, 
+	SYS_set_sig_trapframe, 
 	MAX_SYSNO,
 };
 

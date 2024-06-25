@@ -622,6 +622,29 @@ int sys_get_pending(sigset_t *__set) {
 	return 0;
 }
 
+int sys_set_sig_entry(u_int envid, u_int func) {
+	struct Env *e;
+	try(envid2env(envid, &e, 0));
+	env->env_sig_entry = func;
+	return 0;
+}
+
+int sys_set_sig_trapframe(u_int envid, struct Trapframe *tf){
+	if(is_illegal_va_range((u_long)tf, sizeof *tf)){
+		return -E_INVAL;
+	}
+	struct Env *e;
+	try(envid2env(envid, &e, 0));
+	env->env_mask_cnt--;
+	if(env == curenv){
+		*((struct Trapframe *)KSTACKTOP -1) = *tf;
+		return tf->regs[2];
+	} else {
+		env->env_tf = *tf;
+		return 0;
+	}
+}
+
 void *syscall_table[MAX_SYSNO] = {
     [SYS_putchar] = sys_putchar,
     [SYS_print_cons] = sys_print_cons,
@@ -645,6 +668,8 @@ void *syscall_table[MAX_SYSNO] = {
 	[SYS_kill] = sys_kill,
 	[SYS_proc_mask] = sys_proc_mask, 
 	[SYS_get_pending] = sys_get_pending, 
+	[SYS_set_sig_entry] = sys_set_sig_entry, 
+	[SYS_set_sig_trapframe] = sys_set_sig_trapframe, 
 };
 
 /* Overview:

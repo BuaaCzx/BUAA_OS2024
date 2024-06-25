@@ -94,7 +94,7 @@ void do_signal(struct Trapframe *tf){
 			sig_todo = ss;
 			break;
 		}
-		u_int cur_mask = curenv->env_sa_mask[curenv->env_mask_cnt].sig;
+		u_int cur_mask = curenv->env_mask_list[curenv->env_mask_cnt].sig;
 		if(!((cur_mask >> (ss->sig)) & 1)) { // 如果信号未被屏蔽
 			if(sig_todo == NULL) { // 如果当前还没有需要处理的信号
 				sig_todo = ss;
@@ -109,9 +109,9 @@ void do_signal(struct Trapframe *tf){
 	TAILQ_REMOVE(&curenv->env_sig_list, ss, sig_link);
 
 	// 把新掩码 push 进掩码栈, 上一个掩码，该信号掩码及该信号本身
-	u_int mask = curenv->env_sa_mask[curenv->env_mask_cnt].sig | curenv->env_sigactions[ss->sig].sa_mask.sig | (1 << (ss->sig - 1));
+	u_int mask = curenv->env_mask_list[curenv->env_mask_cnt].sig | curenv->env_sigactions[ss->sig].sa_mask.sig | (1 << (ss->sig - 1));
 	curenv->env_mask_cnt++;
-	curenv->env_sa_mask[curenv->env_mask_cnt].sig = mask;
+	curenv->env_mask_list[curenv->env_mask_cnt].sig = mask;
 
 	struct Trapframe tmp_tf = *tf;
 

@@ -129,6 +129,7 @@ int sigorset(sigset_t *__set, const sigset_t *__left, const sigset_t *__right) {
 		return -1;
 	}
 	__set->sig = __left->sig | __right->sig;
+	return 0;
 }
 // 计算两个信号集__left和__right的并集，并将结果存储在__set中。
 

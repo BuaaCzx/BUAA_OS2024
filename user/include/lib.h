@@ -69,6 +69,18 @@ int syscall_cgetc(void);
 int syscall_write_dev(void *va, u_int dev, u_int len);
 int syscall_read_dev(void *va, u_int dev, u_int len);
 
+int syscall_sigaction(u_int envid, int signum, const struct sigaction *newact, struct sigaction *oldact);
+
+int syscall_kill(u_int envid, int sig);
+
+int syscall_proc_mask(int __how, const sigset_t * __set, sigset_t * __oset);
+
+int syscall_get_pending(sigset_t *__set);
+
+int syscall_set_sig_entry(u_int envid, u_int func);
+
+int syscall_set_sig_trapframe(u_int envid, struct Trapframe *tf);
+
 // ipc.c
 void ipc_send(u_int whom, u_int val, const void *srcva, u_int perm);
 u_int ipc_recv(u_int *whom, void *dstva, u_int *perm);

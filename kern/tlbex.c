@@ -87,10 +87,6 @@ void do_signal(struct Trapframe *tf){
 
 	struct sigset_t *sig_todo = NULL; // 将要处理的信号
 
-	if (TAILQ_EMPTY(&curenv->env_sig_list)) { // 如果没有信号
-		return;
-	}
-
 	struct sigset_t *ss;
 	TAILQ_FOREACH(ss, &curenv->env_sig_list, sig_link) {
 		if(ss->sig == SIGKILL) { // 如果有 SIGKILL，优先处理
@@ -107,6 +103,13 @@ void do_signal(struct Trapframe *tf){
 				}
 			}
 		}
+	}
+
+	if (!ss) {
+		debugf("no signal\n");
+		return;
+	} else {
+		debugf("catch signal %d\n", ss->sig);
 	}
 
 	TAILQ_REMOVE(&curenv->env_sig_list, ss, sig_link);

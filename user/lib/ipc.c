@@ -54,7 +54,7 @@ int sigaction(int signum, const struct sigaction *newact, struct sigaction *olda
 
 int kill(u_int envid, int sig){
 	if (is_illegal_sig(sig)) {
-		return 0;
+		return -1;
 	}
 	return syscall_kill(envid, sig);
 }

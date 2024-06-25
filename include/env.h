@@ -32,7 +32,7 @@ struct sigaction {
 TAILQ_HEAD(Sig_list, sigset_t);
 
 #define SIGINT 2
-#define SIGKILL 4
+#define SIGILL 4
 #define SIGKILL 9
 #define SIGSEGV 11
 #define SIGCHLD 17

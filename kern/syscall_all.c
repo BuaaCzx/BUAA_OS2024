@@ -625,7 +625,7 @@ int sys_get_pending(sigset_t *__set) {
 int sys_set_sig_entry(u_int envid, u_int func) {
 	struct Env *e;
 	try(envid2env(envid, &e, 0));
-	env->env_sig_entry = func;
+	e->env_sig_entry = func;
 	return 0;
 }
 
@@ -635,12 +635,12 @@ int sys_set_sig_trapframe(u_int envid, struct Trapframe *tf){
 	}
 	struct Env *e;
 	try(envid2env(envid, &e, 0));
-	env->env_mask_cnt--;
+	e->env_mask_cnt--;
 	if(env == curenv){
 		*((struct Trapframe *)KSTACKTOP -1) = *tf;
 		return tf->regs[2];
 	} else {
-		env->env_tf = *tf;
+		e->env_tf = *tf;
 		return 0;
 	}
 }

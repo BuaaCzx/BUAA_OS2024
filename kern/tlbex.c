@@ -96,7 +96,7 @@ void do_signal(struct Trapframe *tf) {
 			break;
 		}
 		u_int cur_mask = curenv->env_mask_list[curenv->env_mask_cnt].sig;
-		if(!((cur_mask >> (ss->sig)) & 1)) { // 如果信号未被屏蔽
+		if(!((cur_mask >> (ss->sig - 1)) & 1)) { // 如果信号未被屏蔽
 			if(sig_todo == NULL) { // 如果当前还没有需要处理的信号
 				sig_todo = ss;
 			} else { // 已经有了，对比优先级

@@ -106,10 +106,10 @@ void do_signal(struct Trapframe *tf){
 	}
 
 	if (!ss) {
-		debugf("no signal\n");
+		printk("no signal\n");
 		return;
 	} else {
-		debugf("catch signal %d\n", ss->sig);
+		printk("catch signal %d\n", ss->sig);
 	}
 
 	TAILQ_REMOVE(&curenv->env_sig_list, ss, sig_link);

@@ -63,6 +63,8 @@ void __attribute__((noreturn)) sys_yield(void) {
 	schedule(1);
 }
 
+int sys_kill(u_int envid, int sig);
+
 /* Overview:
  * 	This function is used to destroy the current environment.
  *
@@ -586,7 +588,7 @@ int sys_sigaction(u_int envid, int signum, const struct sigaction *newact, struc
 static sigset_t sigs[1005];
 static int sigs_cnt;
 
-int sys_kill(u_int envid, int sig){
+int sys_kill(u_int envid, int sig) {
 	struct Env *e;
 	try(envid2env(envid, &e, 0));
 	sigs[sigs_cnt].sig = sig;

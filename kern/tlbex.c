@@ -85,6 +85,10 @@ void do_signal(struct Trapframe *tf){
 	// TODO: 照着 tlb 写一下
 }
 
+void do_sigill(struct Trapframe *tf) {
+	sys_kill(0, SIGILL);
+	return;
+}
 #if !defined(LAB) || LAB >= 4
 /* Overview:
  *   This is the TLB Mod exception handler in kernel.

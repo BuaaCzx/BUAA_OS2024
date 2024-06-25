@@ -106,7 +106,7 @@ void do_signal(struct Trapframe *tf){
 	if (!sig_todo) {
 		return;
 	} else {
-		printk("catch signal %d\n", sig_todo->sig);
+		// printk("catch signal %d\n", sig_todo->sig);
 	}
 
 	TAILQ_REMOVE(&curenv->env_sig_list, sig_todo, sig_link);

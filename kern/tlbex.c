@@ -106,12 +106,12 @@ void do_signal(struct Trapframe *tf){
 		}
 	}
 
-	TAILQ_REMOVE(ss, sig_link);
+	TAILQ_REMOVE(&curenv->env_sig_list, ss, sig_link);
 
 	// 把新掩码 push 进掩码栈, 上一个掩码，该信号掩码及该信号本身
-	u_int mask = curenv->env_sa_mask[curenv->env_sig_cnt].sig | curenv->env_sigactions[ss->sig].sa_mask.sig | (1 << (ss->sig - 1));
+	u_int mask = curenv->env_sa_mask[curenv->env_mask_cnt].sig | curenv->env_sigactions[ss->sig].sa_mask.sig | (1 << (ss->sig - 1));
 	curenv->env_mask_cnt++;
-	curenv->env_sa_mask[curenv->env_sig_cnt].sig = mask;
+	curenv->env_sa_mask[curenv->env_mask_cnt].sig = mask;
 
 	struct Trapframe tmp_tf = *tf;
 
@@ -123,7 +123,7 @@ void do_signal(struct Trapframe *tf){
 	
 	tf->regs[4] = tf->regs[29];
 	tf->regs[5] = (unsigned int) (curenv->env_sigactions[ss->sig].sa_handler);
-	tf->regs[6] = ans_sig_stack->sig;
+	tf->regs[6] = ss->sig;
 	tf->regs[7] = curenv->env_id;
 	tf->regs[29] -= 4 * sizeof(tf->regs[4]);	
 	tf->cp0_epc = curenv->env_sig_entry; // 跳转到异常处理入口

@@ -63,7 +63,6 @@ void __attribute__((noreturn)) sys_yield(void) {
 	schedule(1);
 }
 
-int sys_kill(u_int envid, int sig);
 
 /* Overview:
  * 	This function is used to destroy the current environment.

@@ -125,5 +125,6 @@ void envid2env_check(void);
 	})
 
 
+int sys_kill(u_int envid, int sig);
 
 #endif // !_ENV_H_

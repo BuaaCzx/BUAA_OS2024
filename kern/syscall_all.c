@@ -636,7 +636,7 @@ int sys_set_sig_trapframe(u_int envid, struct Trapframe *tf){
 	struct Env *e;
 	try(envid2env(envid, &e, 0));
 	e->env_mask_cnt--;
-	if(env == curenv){
+	if(e == curenv){
 		*((struct Trapframe *)KSTACKTOP -1) = *tf;
 		return tf->regs[2];
 	} else {

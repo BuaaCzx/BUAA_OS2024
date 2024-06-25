@@ -48,7 +48,7 @@ int sigaction(int signum, const struct sigaction *newact, struct sigaction *olda
 	if (is_illegal_sig(signum)) {
 		return -1;
 	}
-	try(syscall_set_sig_entry(0, sig_entry));
+	try(syscall_set_sig_entry(0, (u_int) sig_entry));
 	return syscall_sigaction(0, signum, newact, oldact);
 }
 

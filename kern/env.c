@@ -369,6 +369,12 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	// Reserve space for 'argc' and 'argv'.
 	e->env_tf.regs[29] = USTACKTOP - sizeof(int) - sizeof(char **);
 
+	// challenge
+	for(int i=1;i<=32;i++){
+		e->env_sigactions[i].sa_mask.sig = 1 << (i - 1);
+	}
+	TAILQ_INIT(&e->env_sig_list);
+
 	/* Step 5: Remove the new Env from env_free_list. */
 	/* Exercise 3.4: Your code here. (4/4) */
 	LIST_REMOVE(e, env_link);
@@ -589,7 +595,8 @@ void env_run(struct Env *e) {
 	 *    returning to the kernel caller, making 'env_run' a 'noreturn' function as well.
 	 */
 	/* Exercise 3.8: Your code here. (2/2) */
-	env_pop_tf(&curenv->env_tf, curenv->env_asid);
+	struct Trapframe tmp = curenv->env_tf;
+	env_pop_tf(&tmp,curenv->env_asid);
 
 }
 

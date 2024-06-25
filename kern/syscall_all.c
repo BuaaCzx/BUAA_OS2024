@@ -571,7 +571,7 @@ int sys_sigaction(u_int envid, int signum, const struct sigaction *newact, struc
 	if (oldact) {
 		*oldact = e->env_sigactions[signum];
 	}
-	if (new_sigaction) {
+	if (newact) {
 		e->env_sigactions[signum] = *new_sigaction;
 	}
 	return 0;
@@ -584,7 +584,7 @@ int sys_kill(u_int envid, int sig){
 	struct Env *e;
 	try(envid2env(envid, &e, 0));
 	sigs[sigs_cnt].sig = sig;
-	TAILQ_INSERT_TAIL(&env_sig_list, sigs + sigs_cnt, sig_link);
+	TAILQ_INSERT_TAIL(&e->env_sig_list, sigs + sigs_cnt, sig_link);
 	sigs_cnt = (sigs_cnt + 1) % 1000;
 	return 0;
 }
@@ -593,8 +593,8 @@ int sys_proc_mask(int __how, const sigset_t * __set, sigset_t * __oset) {
 	struct Env *e;
 	try(envid2env(0, &e, 0));
 	sigset_t *s = e->env_mask_list + e->env_mask_cnt;
-    if (__oldset) {
-		__oldset->sig = *s; // 取出栈顶元素
+    if (__oset) {
+		__oset->sig = *s; // 取出栈顶元素
 	}
 	if (!__set) { // 异常处理
 		return -1;
@@ -615,8 +615,9 @@ int sys_get_pending(sigset_t *__set) {
 	struct Env *e;
 	try(envid2env(0, &e, 0));
 	__set->sig = 0;
+	sigset_t *i;
 	TAILQ_FOREACH(i, &e->env_sig_list, sig_link) {
-		__set->sig |= 1 << (pos->sig - 1);
+		__set->sig |= 1 << (i->sig - 1);
 	}
 	return 0;
 }
@@ -642,7 +643,6 @@ void *syscall_table[MAX_SYSNO] = {
     [SYS_read_dev] = sys_read_dev,
 	[SYS_sigaction] = sys_sigaction, 
 	[SYS_kill] = sys_kill,
-	[SYS_set_mask] = sys_set_mask, 
 	[SYS_proc_mask] = sys_proc_mask, 
 	[SYS_get_pending] = sys_get_pending, 
 };

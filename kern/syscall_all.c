@@ -587,20 +587,24 @@ int sys_sigaction(u_int envid, int signum, const struct sigaction *newact, struc
 		*oldact = e->env_sigactions[signum];
 	}
 	if (newact) {
-		e->env_sigactions[signum] = *newact;
+		if (signum == SIGKILL) { // 不修改处理函数
+			e->env_sigactions[signum].sig = newact->sig;
+		} else {
+			e->env_sigactions[signum] = *newact;
+		}
 	}
 	return 0;
 }
 
-static sigset_t sigs[1005];
-static int sigs_cnt;
+static sigset_t sigs[4005];
+static int sigs_cnt = 0;
 
 int sys_kill(u_int envid, int sig) {
 	struct Env *e;
 	try(envid2env(envid, &e, 0));
 	sigs[sigs_cnt].sig = sig;
 	TAILQ_INSERT_TAIL(&e->env_sig_list, sigs + sigs_cnt, sig_link);
-	sigs_cnt = (sigs_cnt + 1) % 1000;
+	sigs_cnt = (sigs_cnt + 1) % 4000;
 	return 0;
 }
 
@@ -610,9 +614,6 @@ int sys_proc_mask(int __how, const sigset_t * __set, sigset_t * __oset) {
 	sigset_t *s = e->env_mask_list + e->env_mask_cnt;
     if (__oset) {
 		*__oset = *s; // 取出栈顶元素
-	}
-	if (!__set) { // 异常处理
-		return -1;
 	}
 	if (__how == SIG_BLOCK) {
 		s->sig |= __set->sig;

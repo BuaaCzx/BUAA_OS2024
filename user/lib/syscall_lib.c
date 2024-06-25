@@ -88,3 +88,7 @@ int syscall_kill(u_int envid, int sig) {
 int syscall_proc_mask(int __how, const sigset_t * __set, sigset_t * __oset) {
 	return msyscall(SYS_proc_mask, __how, __set, __oset);
 }
+
+int syscall_get_pending(sigset_t *__set) {
+	return msyscall(SYS_get_pending, __set);
+}

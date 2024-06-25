@@ -577,13 +577,6 @@ int sys_sigaction(u_int envid, int signum, const struct sigaction *newact, struc
 	return 0;
 }
 
-int sys_kill(u_int envid, int sig) {
-	struct Env *e;
-	try(envid2env(envid, &e, 0));
-	e->env_pending_sa.sig |= 1 << (sig - 1); // 不知道是不是这样写
-	return 0;
-}
-
 static sigset_t sigs[1005];
 static int sigs_cnt;
 
@@ -598,7 +591,7 @@ int sys_kill(u_int envid, int sig){
 
 int sys_proc_mask(int __how, const sigset_t * __set, sigset_t * __oset) {
 	struct Env *e;
-	try(envid2env(envid, &e, 0));
+	try(envid2env(0, &e, 0));
 	sigset_t *s = e->env_mask_list + e->env_mask_cnt;
     if (__oldset) {
 		__oldset->sig = *s; // 取出栈顶元素
@@ -614,6 +607,16 @@ int sys_proc_mask(int __how, const sigset_t * __set, sigset_t * __oset) {
 		s->sig = __set->sig;
 	} else {
 		return -1;
+	}
+	return 0;
+}
+
+int sys_get_pending(sigset_t *__set) {
+	struct Env *e;
+	try(envid2env(0, &e, 0));
+	__set->sig = 0;
+	TAILQ_FOREACH(i, &e->env_sig_list, sig_link) {
+		__set->sig |= 1 << (pos->sig - 1);
 	}
 	return 0;
 }
@@ -641,6 +644,7 @@ void *syscall_table[MAX_SYSNO] = {
 	[SYS_kill] = sys_kill,
 	[SYS_set_mask] = sys_set_mask, 
 	[SYS_proc_mask] = sys_proc_mask, 
+	[SYS_get_pending] = sys_get_pending, 
 };
 
 /* Overview:

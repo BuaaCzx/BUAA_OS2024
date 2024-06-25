@@ -185,8 +185,8 @@ int fork(void) {
 	 */
 	/* Exercise 4.15: Your code here. (2/2) */
 	try(syscall_set_tlb_mod_entry(child, cow_entry));
-	try(syscall_set_env_status(child, ENV_RUNNABLE));
 	try(syscall_set_sig_entry(child, sig_entry));
+	try(syscall_set_env_status(child, ENV_RUNNABLE));
 
 	return child;
 }

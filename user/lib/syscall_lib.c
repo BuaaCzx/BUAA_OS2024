@@ -94,6 +94,7 @@ int syscall_get_pending(sigset_t *__set) {
 }
 
 int syscall_set_sig_entry(u_int envid, u_int func) {
+	debugf("set_sig_entry\n");
 	return msyscall(SYS_set_sig_entry, envid, func);
 }
 

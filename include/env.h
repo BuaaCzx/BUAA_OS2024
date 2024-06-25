@@ -21,6 +21,7 @@
 
 typedef struct sigset_t {
     uint32_t sig;
+	TAILQ_ENTRY(sigset_t) sig_link;
 } sigset_t;
 
 struct sigaction {
@@ -28,7 +29,7 @@ struct sigaction {
     sigset_t   sa_mask;
 };
 
-LIST_HEAD(Sig_list, sigaction);
+TAILQ_HEAD(Sig_list, sigset_t);
 
 #define SIGINT 2
 #define SIGKILL 4
@@ -79,14 +80,16 @@ struct Env {
 
 	// challenge
 	struct sigaction env_sigactions[35];
-	sigset_t env_sa_mask[128];//目前进程对应掩码
 	/*
 	当前的信号掩码。信号掩码（Signal Mask）是操作系统提供的一种机制，用于控制进程对接收特定信号的临时阻塞。
 	它定义了一组当前进程中被阻止递送到进程的信号集合。
 	当一个信号被设置在信号掩码中时，该信号不会立即传递给进程，直到从掩码中清除或进程特地检查并处理这些被阻塞的信号。
 	*/
 	struct Sig_list env_sig_list; // 接收到的信号队列
+	struct sigset_t env_mask_list[305]; // 掩码栈
+	int env_mask_cnt;
 	u_int env_sig_entry; // sig handler
+
 };
 
 LIST_HEAD(Env_list, Env);

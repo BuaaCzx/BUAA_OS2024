@@ -584,14 +584,27 @@ int sys_kill(u_int envid, int sig) {
 	return 0;
 }
 
-int sys_set_mask(u_int envid, sigset_t __newset) {
+int sys_proc_mask(int __how, const sigset_t * __set, sigset_t * __oset) {
 	struct Env *e;
 	try(envid2env(envid, &e, 0));
-
-	e->env_sa_mask = __newset;
-
+	sigset_t *s = e->env_mask_list + e->env_mask_cnt;
+    if (__oldset) {
+		__oldset->sig = *s; // 取出栈顶元素
+	}
+	if (!__set) { // 异常处理
+		return -1;
+	}
+	if (__how == SIG_BLOCK) {
+		s->sig |= __set->sig;
+	} else if (__how == SIG_UNBLOCK) {
+		s->sig &= (~__set->sig);
+	} else if (__how == SIG_SETMASK) {
+		s->sig = __set->sig;
+	} else {
+		return -1;
+	}
 	return 0;
-} 
+}
 
 void *syscall_table[MAX_SYSNO] = {
     [SYS_putchar] = sys_putchar,
@@ -615,6 +628,7 @@ void *syscall_table[MAX_SYSNO] = {
 	[SYS_sigaction] = sys_sigaction, 
 	[SYS_kill] = sys_kill,
 	[SYS_set_mask] = sys_set_mask, 
+	[SYS_proc_mask] = sys_proc_mask, 
 };
 
 /* Overview:

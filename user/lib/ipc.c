@@ -40,22 +40,22 @@ u_int ipc_recv(u_int *whom, void *dstva, u_int *perm) {
 
 // challenge
 
-int sigaction(int signum, const struct sigaction *newact, struct sigaction *oldact) {
-	if (signum > 32) {
-		return -1;
-	}
-
-	if (oldact) {
-		*oldact = env->env_sigactions[signum];
-	}
-
-	// TODO
-	return syscall_set_sigaction(0, signum, newact);
+int is_illegal_sig(int signum) {
+	return signum < 1 || signum > 32;
 }
 
-int kill(u_int envid, int sig) {
-    return syscall_kill(envid, sig);
-    //向进程控制号编号为 `envid` 的进程发送 `sig` 信号
+int sigaction(int signum, const struct sigaction *newact, struct sigaction *oldact){
+	if (is_illegal_sig(signum)) {
+		return -1;
+	}
+	return syscall_set_sigaction(0, signum, newact, oldact);
+}
+
+int kill(u_int envid, int sig){
+	if (is_illegal_sig(sig)) {
+		return 0;
+	}
+	return syscall_kill(envid, sig);
 }
 
 int sigemptyset(sigset_t *__set) {
@@ -112,24 +112,7 @@ int sigorset(sigset_t *__set, const sigset_t *__left, const sigset_t *__right) {
 // 计算两个信号集__left和__right的并集，并将结果存储在__set中。
 
 int sigprocmask(int __how, const sigset_t * __set, sigset_t * __oset) {
-	if (__oset) {
-		*__oset = env->env_sa_mask;
-	}
-	sigset_t __newset = env->env_sa_mask;
-	if (__how == SIG_BLOCK) {
-		sigorset(&__newset, &env->env_sa_mask, __set);
-	} else if (__how == SIG_UNBLOCK) {
-		for (int i = 1; i <= 32; i++) {
-			int fl = (__set->sig >> (i - 1)) & 1;
-			if (fl) {
-				sigdelset(&__newset, i);
-			}
-		}
-	} else if (__how == SIG_SETMASK) {
-		__newset = *__set;
-	}
-	sys_set_mask(0, __newset);
-	return 0;
+	return syscall_proc_mask(0, __how, __set, __oset);
 }
 // 根据__how的值更改当前进程的信号屏蔽字。__set是要应用的新掩码，__oset（如果非NULL）则保存旧的信号屏蔽字。
 // __how可以是SIG_BLOCK（添加__set到当前掩码）、SIG_UNBLOCK（从当前掩码中移除__set）、或SIG_SETMASK（设置当前掩码为__set）。

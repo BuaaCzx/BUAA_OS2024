@@ -85,6 +85,6 @@ int syscall_kill(u_int envid, int sig) {
 	return msyscall(SYS_kill, envid, sig);
 }
 
-int sys_set_mask(u_int envid, sigset_t __newset) {
-	return msyscall(SYS_set_mask, envid, __newset);
-} 
+int syscall_proc_mask(int __how, const sigset_t * __set, sigset_t * __oset) {
+	return msyscall(SYS_proc_mask, __how, __set, __oset);
+}

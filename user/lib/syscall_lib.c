@@ -97,6 +97,6 @@ int syscall_set_sig_entry(u_int envid, u_int func) {
 	return msyscall(SYS_set_sig_entry, envid, func);
 }
 
-int sys_set_sig_trapframe(u_int envid, struct Trapframe *tf) {
+int syscall_set_sig_trapframe(u_int envid, struct Trapframe *tf) {
 	return msyscall(SYS_set_sig_trapframe, envid, tf);
 }

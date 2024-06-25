@@ -82,6 +82,9 @@ void _do_tlb_refill(u_long *pentrylo, u_int va, u_int asid) {
 }
 
 void do_signal(struct Trapframe *tf){
+
+	printk("in do_signal\n");
+
 	struct sigset_t *sig_todo = NULL; // 将要处理的信号
 
 	if (TAILQ_EMPTY(&curenv->env_sig_list)) { // 如果没有信号
@@ -127,6 +130,8 @@ void do_signal(struct Trapframe *tf){
 	tf->regs[7] = curenv->env_id;
 	tf->regs[29] -= 4 * sizeof(tf->regs[4]);	
 	tf->cp0_epc = curenv->env_sig_entry; // 跳转到异常处理入口
+
+	printk("out do_signal\n");
 }
 
 void do_sigill(struct Trapframe *tf) {

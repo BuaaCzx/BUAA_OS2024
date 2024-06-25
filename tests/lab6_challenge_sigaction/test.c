@@ -1,5 +1,4 @@
 #include <lib.h>
-#include <signal.h>
 
 void sigchld_handler(int sig) {
     debugf("capture SIGCHLD signal.\n");

@@ -82,13 +82,58 @@ void _do_tlb_refill(u_long *pentrylo, u_int va, u_int asid) {
 }
 
 void do_signal(struct Trapframe *tf){
-	// TODO: 照着 tlb 写一下
+	struct sigset_t *sig_todo = NULL; // 将要处理的信号
+
+	if (TAILQ_EMPTY(&curenv->env_sig_list)) { // 如果没有信号
+		return;
+	}
+
+	struct sigset_t *ss;
+	TAILQ_FOREACH(ss, &curenv->env_sig_list, sig_link) {
+		if(ss->sig == SIGKILL) { // 如果有 SIGKILL，优先处理
+			sig_todo = ss;
+			break;
+		}
+		u_int cur_mask = curenv->env_sa_mask[curenv->env_mask_cnt].sig;
+		if(!((cur_mask >> (ss->sig)) & 1)) { // 如果信号未被屏蔽
+			if(sig_todo == NULL) { // 如果当前还没有需要处理的信号
+				sig_todo = ss;
+			} else { // 已经有了，对比优先级
+				if(ss->sig > sig_todo->sig){
+					sig_todo = ss;
+				}
+			}
+		}
+	}
+
+	TAILQ_REMOVE(ss, sig_link);
+
+	// 把新掩码 push 进掩码栈, 上一个掩码，该信号掩码及该信号本身
+	u_int mask = curenv->env_sa_mask[curenv->env_sig_cnt].sig | curenv->env_sigactions[ss->sig].sa_mask.sig | (1 << (ss->sig - 1));
+	curenv->env_mask_cnt++;
+	curenv->env_sa_mask[curenv->env_sig_cnt].sig = mask;
+
+	struct Trapframe tmp_tf = *tf;
+
+	if (tf->regs[29] < USTACKTOP || tf->regs[29] >= UXSTACKTOP) {
+		tf->regs[29] = UXSTACKTOP;
+	}
+	tf->regs[29] -= sizeof(struct Trapframe);
+	*(struct Trapframe *)tf->regs[29] = tmp_tf;
+	
+	tf->regs[4] = tf->regs[29];
+	tf->regs[5] = (unsigned int) (curenv->env_sigactions[ss->sig].sa_handler);
+	tf->regs[6] = ans_sig_stack->sig;
+	tf->regs[7] = curenv->env_id;
+	tf->regs[29] -= 4 * sizeof(tf->regs[4]);	
+	tf->cp0_epc = curenv->env_sig_entry; // 跳转到异常处理入口
 }
 
 void do_sigill(struct Trapframe *tf) {
 	sys_kill(0, SIGILL);
 	return;
 }
+
 #if !defined(LAB) || LAB >= 4
 /* Overview:
  *   This is the TLB Mod exception handler in kernel.

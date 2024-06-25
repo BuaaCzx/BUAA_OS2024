@@ -565,25 +565,15 @@ int sys_read_dev(u_int va, u_int pa, u_int len) {
 
 // challenge
 
-int sys_get_sigaction(u_int envid, int signum, struct sigaction *addr) {
+int sys_sigaction(u_int envid, int signum, const struct sigaction *newact, struct sigaction *oldact) { // 信号注册系统调用
 	struct Env *e;
 	try(envid2env(envid, &e, 0));
-
-	if (addr) {
-		*addr = e->env_sigactions[signum];
+	if (oldact) {
+		*oldact = e->env_sigactions[signum];
 	}
-
-	return 0;
-}
-
-int sys_set_sigaction(u_int envid, int signum, struct sigaction *new_sigaction) {
-	struct Env *e;
-	try(envid2env(envid, &e, 0));
-
 	if (new_sigaction) {
 		e->env_sigactions[signum] = *new_sigaction;
 	}
-
 	return 0;
 }
 
@@ -622,8 +612,7 @@ void *syscall_table[MAX_SYSNO] = {
     [SYS_cgetc] = sys_cgetc,
     [SYS_write_dev] = sys_write_dev,
     [SYS_read_dev] = sys_read_dev,
-	[SYS_get_sigaction] = sys_get_sigaction, 
-	[SYS_set_sigaction] = sys_set_sigaction, 
+	[SYS_sigaction] = sys_sigaction, 
 	[SYS_kill] = sys_kill,
 	[SYS_set_mask] = sys_set_mask, 
 };

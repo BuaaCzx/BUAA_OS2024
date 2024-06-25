@@ -77,12 +77,8 @@ int syscall_read_dev(void *va, u_int dev, u_int size) {
 
 // challenge
 
-int syscall_get_sigaction(u_int envid, int signum, struct sigaction *addr) {
-	return msyscall(SYS_get_sigaction, envid, signum, addr);
-}
-
-int syscall_set_sigaction(u_int envid, int signum, struct sigaction *new_sigaction) {
-	return msyscall(SYS_set_sigaction, envid, signum, new_sigaction);
+int syscall_sigaction(u_int envid, int signum, const struct sigaction *newact, struct sigaction *oldact) {
+	return msyscall(SYS_sigaction, envid, signum, newact, oldact);
 }
 
 int syscall_kill(u_int envid, int sig) {

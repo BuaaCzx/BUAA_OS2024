@@ -28,6 +28,8 @@ struct sigaction {
     sigset_t   sa_mask;
 };
 
+LIST_HEAD(Sig_list, sigaction);
+
 #define SIGINT 2
 #define SIGKILL 4
 #define SIGKILL 9
@@ -77,14 +79,14 @@ struct Env {
 
 	// challenge
 	struct sigaction env_sigactions[35];
-    sigset_t env_sa_mask;
+	sigset_t env_sa_mask[128];//目前进程对应掩码
 	/*
 	当前的信号掩码。信号掩码（Signal Mask）是操作系统提供的一种机制，用于控制进程对接收特定信号的临时阻塞。
 	它定义了一组当前进程中被阻止递送到进程的信号集合。
 	当一个信号被设置在信号掩码中时，该信号不会立即传递给进程，直到从掩码中清除或进程特地检查并处理这些被阻塞的信号。
 	*/
-	sigset_t env_pending_sa; // 被阻塞且未处理的信号集
-
+	struct Sig_list env_sig_list; // 接收到的信号队列
+	u_int env_sig_entry; // sig handler
 };
 
 LIST_HEAD(Env_list, Env);

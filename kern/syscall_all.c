@@ -572,7 +572,7 @@ int sys_sigaction(u_int envid, int signum, const struct sigaction *newact, struc
 		*oldact = e->env_sigactions[signum];
 	}
 	if (newact) {
-		e->env_sigactions[signum] = *new_sigaction;
+		e->env_sigactions[signum] = *newact;
 	}
 	return 0;
 }
@@ -594,7 +594,7 @@ int sys_proc_mask(int __how, const sigset_t * __set, sigset_t * __oset) {
 	try(envid2env(0, &e, 0));
 	sigset_t *s = e->env_mask_list + e->env_mask_cnt;
     if (__oset) {
-		__oset->sig = *s; // 取出栈顶元素
+		__oset = *s; // 取出栈顶元素
 	}
 	if (!__set) { // 异常处理
 		return -1;

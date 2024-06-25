@@ -100,7 +100,7 @@ void do_signal(struct Trapframe *tf) {
 			if(sig_todo == NULL) { // 如果当前还没有需要处理的信号
 				sig_todo = ss;
 			} else { // 已经有了，对比优先级
-				if(ss->sig > sig_todo->sig){
+				if(ss->sig < sig_todo->sig){
 					sig_todo = ss;
 				}
 			}

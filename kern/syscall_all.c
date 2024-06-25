@@ -79,6 +79,12 @@ int sys_env_destroy(u_int envid) {
 	struct Env *e;
 	try(envid2env(envid, &e, 1));
 
+	// challenge
+	if(e->env_parent_id){
+		sys_kill(e->env_parent_id, SIGCHLD);
+	}
+	// end_challenge
+
 	printk("[%08x] destroying %08x\n", curenv->env_id, e->env_id);
 	env_destroy(e);
 	return 0;
@@ -687,6 +693,10 @@ void do_syscall(struct Trapframe *tf) {
 	int sysno = tf->regs[4];
 	if (sysno < 0 || sysno >= MAX_SYSNO) {
 		tf->regs[2] = -E_NO_SYS;
+
+		// challenge
+		sys_kill(0, SIGSYS); // 处理异常
+		tf->cp0_epc += 4;
 		return;
 	}
 

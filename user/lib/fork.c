@@ -53,6 +53,23 @@ static void __attribute__((noreturn)) cow_entry(struct Trapframe *tf) {
 	user_panic("syscall_set_trapframe returned %d", r);
 }
 
+// challenge
+static void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, void (*sa_handler)(int), int signum, int envid) {
+    if (sa_handler != 0) {
+        sa_handler(signum); // 直接调用定义好的处理函数
+        int r = syscall_set_sig_trapframe(0, tf);
+        user_panic("sig_entry syscall_set_trapframe returned %d", r);
+    }
+    switch (signum) {
+        case SIGINT: case SIGILL: case SIGKILL: case SIGSEGV:
+            syscall_env_destroy(envid); //默认处理
+            user_panic("sig_entry syscall_env_destroy returned");
+        default:;
+            int r = syscall_set_sig_trapframe(0, tf);
+            user_panic("sig_entry syscall_set_trapframe returned %d", r);
+    }
+}
+
 /* Overview:
  *   Grant our child 'envid' access to the virtual page 'vpn' (with address 'vpn' * 'PAGE_SIZE') in
  * our (current env's) address space. 'PTE_COW' should be used to isolate the modifications on

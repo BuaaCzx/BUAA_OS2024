@@ -80,7 +80,7 @@ int sigfillset(sigset_t *__set) {
 // 将参数中的__set掩码填满，使其包含所有已定义的信号。这意味着__set将包括所有信号。(全为1)
 
 int sigaddset(sigset_t *__set, int __signo) {
-	if (__set) {
+	if (__set && !is_illegal_sig(__signo)) {
 		__set->sig |= 1 << (__signo - 1);
 	} else {
 		return -1;
@@ -90,7 +90,7 @@ int sigaddset(sigset_t *__set, int __signo) {
 // 向__set信号集中添加一个信号__signo。如果操作成功，__set将包含该信号。(置位为1)
 
 int sigdelset(sigset_t *__set, int __signo) {
-	if (__set) {
+	if (__set && !is_illegal_sig(__signo)) {
 		__set->sig &= ~(1 << (__signo - 1));
 	} else {
 		return -1;

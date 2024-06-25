@@ -14,6 +14,10 @@ END(handle_\exception)
 .text
 
 FEXPORT(ret_from_exception)
+	move	a0, sp
+	addiu	sp, sp, -8
+	jal		do_signal
+	addiu	sp, sp, 8
 	RESTORE_ALL
 	eret
 
@@ -33,6 +37,7 @@ BUILD_HANDLER tlb do_tlb_refill
 #if !defined(LAB) || LAB >= 4
 BUILD_HANDLER mod do_tlb_mod
 BUILD_HANDLER sys do_syscall
+BUILD_HANDLER sigill do_sigill
 #endif
 
 BUILD_HANDLER reserved do_reserved

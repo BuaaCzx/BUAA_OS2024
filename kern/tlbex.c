@@ -19,7 +19,9 @@ static void passive_alloc(u_int va, Pde *pgdir, u_int asid) {
 	struct Page *p = NULL;
 
 	if (va < UTEMP) {
-		panic("address too low");
+		// panic("address too low");
+		printk("address too low, send SIGSEGV\n");
+		sys_kill(0, SIGSEGV);
 	}
 
 	if (va >= USTACKTOP && va < USTACKTOP + PAGE_SIZE) {
@@ -77,6 +79,10 @@ void _do_tlb_refill(u_long *pentrylo, u_int va, u_int asid) {
 	ppte = (Pte *)((u_long)ppte & ~0x7);
 	pentrylo[0] = ppte[0] >> 6;
 	pentrylo[1] = ppte[1] >> 6;
+}
+
+void do_signal(struct Trapframe *tf){
+	// TODO: 照着 tlb 写一下
 }
 
 #if !defined(LAB) || LAB >= 4

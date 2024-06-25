@@ -103,16 +103,16 @@ void do_signal(struct Trapframe *tf){
 		}
 	}
 
-	if (!ss) {
+	if (!sig_todo) {
 		return;
 	} else {
-		printk("catch signal %d\n", ss->sig);
+		printk("catch signal %d\n", sig_todo->sig);
 	}
 
-	TAILQ_REMOVE(&curenv->env_sig_list, ss, sig_link);
+	TAILQ_REMOVE(&curenv->env_sig_list, sig_todo, sig_link);
 
 	// 把新掩码 push 进掩码栈, 上一个掩码，该信号掩码及该信号本身
-	u_int mask = curenv->env_mask_list[curenv->env_mask_cnt].sig | curenv->env_sigactions[ss->sig].sa_mask.sig | (1 << (ss->sig - 1));
+	u_int mask = curenv->env_mask_list[curenv->env_mask_cnt].sig | curenv->env_sigactions[sig_todo->sig].sa_mask.sig | (1 << (sig_todo->sig - 1));
 	curenv->env_mask_cnt++;
 	curenv->env_mask_list[curenv->env_mask_cnt].sig = mask;
 
@@ -125,8 +125,8 @@ void do_signal(struct Trapframe *tf){
 	*(struct Trapframe *)tf->regs[29] = tmp_tf;
 	
 	tf->regs[4] = tf->regs[29];
-	tf->regs[5] = (unsigned int) (curenv->env_sigactions[ss->sig].sa_handler);
-	tf->regs[6] = ss->sig;
+	tf->regs[5] = (unsigned int) (curenv->env_sigactions[sig_todo->sig].sa_handler);
+	tf->regs[6] = sig_todo->sig;
 	tf->regs[7] = curenv->env_id;
 	tf->regs[29] -= 4 * sizeof(tf->regs[4]);	
 	tf->cp0_epc = curenv->env_sig_entry; // 跳转到异常处理入口

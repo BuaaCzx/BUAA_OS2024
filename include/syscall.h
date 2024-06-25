@@ -25,6 +25,7 @@ enum {
 	SYS_sigaction,
 	SYS_kill,
 	SYS_proc_mask, 
+	SYS_get_pending, 
 	MAX_SYSNO,
 };
 

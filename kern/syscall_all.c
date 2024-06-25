@@ -615,15 +615,19 @@ int sys_proc_mask(int __how, const sigset_t * __set, sigset_t * __oset) {
     if (__oset) {
 		*__oset = *s; // 取出栈顶元素
 	}
-	if (__how == SIG_BLOCK) {
-		s->sig |= __set->sig;
-	} else if (__how == SIG_UNBLOCK) {
-		s->sig &= (~__set->sig);
-	} else if (__how == SIG_SETMASK) {
-		s->sig = __set->sig;
-	} else {
-		return -1;
+
+	if (__set) {
+		if (__how == SIG_BLOCK) {
+			s->sig |= __set->sig;
+		} else if (__how == SIG_UNBLOCK) {
+			s->sig &= (~__set->sig);
+		} else if (__how == SIG_SETMASK) {
+			s->sig = __set->sig;
+		} else {
+			return -1;
+		}
 	}
+
 	return 0;
 }
 

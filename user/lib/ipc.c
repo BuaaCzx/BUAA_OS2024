@@ -134,9 +134,6 @@ int sigorset(sigset_t *__set, const sigset_t *__left, const sigset_t *__right) {
 // 计算两个信号集__left和__right的并集，并将结果存储在__set中。
 
 int sigprocmask(int __how, const sigset_t * __set, sigset_t * __oset) {
-	if (!__set) {
-		return -1;
-	}
 	return syscall_proc_mask(__how, __set, __oset);
 }
 // 根据__how的值更改当前进程的信号屏蔽字。__set是要应用的新掩码，__oset（如果非NULL）则保存旧的信号屏蔽字。

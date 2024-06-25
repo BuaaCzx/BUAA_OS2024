@@ -371,12 +371,14 @@ int env_alloc(struct Env **new, u_int parent_id) {
 
 	// challenge
 	for(int i=1;i<=32;i++){
+		e->env_sigactions[i].sa_handler = NULL;
 		e->env_sigactions[i].sa_mask.sig = 1 << (i - 1);
 	}
 	TAILQ_INIT(&e->env_sig_list);
 	e->env_mask_cnt = 0;
 	e->env_sig_entry = 0;
 	e->env_cur_sig = 0;
+	e->env_mask_list[0].sig = 0;
 
 	/* Step 5: Remove the new Env from env_free_list. */
 	/* Exercise 3.4: Your code here. (4/4) */

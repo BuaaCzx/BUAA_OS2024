@@ -62,6 +62,8 @@ int kill(u_int envid, int sig){
 int sigemptyset(sigset_t *__set) {
 	if (__set) {
 		__set->sig = 0;
+	} else {
+		return -1;
 	}
 	return 0;
 }
@@ -70,6 +72,8 @@ int sigemptyset(sigset_t *__set) {
 int sigfillset(sigset_t *__set) {
 	if (__set) {
 		__set->sig = ~0;
+	} else {
+		return -1;
 	}
 	return 0;
 }
@@ -78,6 +82,8 @@ int sigfillset(sigset_t *__set) {
 int sigaddset(sigset_t *__set, int __signo) {
 	if (__set) {
 		__set->sig |= 1 << (__signo - 1);
+	} else {
+		return -1;
 	}
 	return 0;
 }
@@ -86,39 +92,59 @@ int sigaddset(sigset_t *__set, int __signo) {
 int sigdelset(sigset_t *__set, int __signo) {
 	if (__set) {
 		__set->sig &= ~(1 << (__signo - 1));
+	} else {
+		return -1;
 	}
 	return 0;
 }
 // 从__set信号集中删除一个信号__signo。如果操作成功，__set将不再包含该信号。(置位为0)
 
 int sigismember(const sigset_t *__set, int __signo) {
+	if (!__set || is_illegal_sig(__signo)) {
+		return -1;
+	}
 	return (__set->sig >> (__signo - 1)) & 1;
 }
 // 检查信号__signo是否是__set信号集的成员。如果是，返回1；如果不是，返回0。
 
 int sigisemptyset(const sigset_t *__set) {
+	if (!__set) {
+		return -1;
+	}
 	return __set->sig == 0;
 }
 // 检查信号集__set是否为空。如果为空，返回1；如果不为空，返回0。
 
 int sigandset(sigset_t *__set, const sigset_t *__left, const sigset_t *__right) {
+	if (!__set || !__left || !__right) {
+		return -1;
+	}
 	__set->sig = __left->sig & __right->sig;
 	return 0;
 }
 // 计算两个信号集__left和__right的交集，并将结果存储在__set中。
 
 int sigorset(sigset_t *__set, const sigset_t *__left, const sigset_t *__right) {
+	if (!__set || !__left || !__right) {
+		return -1;
+	}
 	__set->sig = __left->sig | __right->sig;
 }
 // 计算两个信号集__left和__right的并集，并将结果存储在__set中。
 
 int sigprocmask(int __how, const sigset_t * __set, sigset_t * __oset) {
+	if (!__set || !__oset) {
+		return -1;
+	}
 	return syscall_proc_mask(__how, __set, __oset);
 }
 // 根据__how的值更改当前进程的信号屏蔽字。__set是要应用的新掩码，__oset（如果非NULL）则保存旧的信号屏蔽字。
 // __how可以是SIG_BLOCK（添加__set到当前掩码）、SIG_UNBLOCK（从当前掩码中移除__set）、或SIG_SETMASK（设置当前掩码为__set）。
 
 int sigpending(sigset_t *__set) {
+	if (!__set) {
+		return -1;
+	}
 	return syscall_get_pending(__set);
 }
 // 获取当前被阻塞且未处理的信号集，并将其存储在__set中。

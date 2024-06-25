@@ -571,25 +571,30 @@ int sys_sigaction(u_int envid, int signum, const struct sigaction *newact, struc
 	if (oldact) {
 		*oldact = e->env_sigactions[signum];
 	}
-	if (new_sigaction) {
-		e->env_sigactions[signum] = *new_sigaction;
+	if (newact) {
+		e->env_sigactions[signum] = *newact;
 	}
 	return 0;
 }
 
-int sys_kill(u_int envid, int sig) {
+static sigset_t sigs[1005];
+static int sigs_cnt;
+
+int sys_kill(u_int envid, int sig){
 	struct Env *e;
 	try(envid2env(envid, &e, 0));
-	e->env_pending_sa.sig |= 1 << (sig - 1); // 不知道是不是这样写
+	sigs[sigs_cnt].sig = sig;
+	TAILQ_INSERT_TAIL(&e->env_sig_list, sigs + sigs_cnt, sig_link);
+	sigs_cnt = (sigs_cnt + 1) % 1000;
 	return 0;
 }
 
 int sys_proc_mask(int __how, const sigset_t * __set, sigset_t * __oset) {
 	struct Env *e;
-	try(envid2env(envid, &e, 0));
+	try(envid2env(0, &e, 0));
 	sigset_t *s = e->env_mask_list + e->env_mask_cnt;
-    if (__oldset) {
-		__oldset->sig = *s; // 取出栈顶元素
+    if (__oset) {
+		*__oset = *s; // 取出栈顶元素
 	}
 	if (!__set) { // 异常处理
 		return -1;
@@ -604,6 +609,40 @@ int sys_proc_mask(int __how, const sigset_t * __set, sigset_t * __oset) {
 		return -1;
 	}
 	return 0;
+}
+
+int sys_get_pending(sigset_t *__set) {
+	struct Env *e;
+	try(envid2env(0, &e, 0));
+	__set->sig = 0;
+	sigset_t *i;
+	TAILQ_FOREACH(i, &e->env_sig_list, sig_link) {
+		__set->sig |= 1 << (i->sig - 1);
+	}
+	return 0;
+}
+
+int sys_set_sig_entry(u_int envid, u_int func) {
+	struct Env *e;
+	try(envid2env(envid, &e, 0));
+	e->env_sig_entry = func;
+	return 0;
+}
+
+int sys_set_sig_trapframe(u_int envid, struct Trapframe *tf){
+	if(is_illegal_va_range((u_long)tf, sizeof *tf)){
+		return -E_INVAL;
+	}
+	struct Env *e;
+	try(envid2env(envid, &e, 0));
+	e->env_mask_cnt--;
+	if(e == curenv){
+		*((struct Trapframe *)KSTACKTOP -1) = *tf;
+		return tf->regs[2];
+	} else {
+		e->env_tf = *tf;
+		return 0;
+	}
 }
 
 void *syscall_table[MAX_SYSNO] = {
@@ -627,8 +666,10 @@ void *syscall_table[MAX_SYSNO] = {
     [SYS_read_dev] = sys_read_dev,
 	[SYS_sigaction] = sys_sigaction, 
 	[SYS_kill] = sys_kill,
-	[SYS_set_mask] = sys_set_mask, 
 	[SYS_proc_mask] = sys_proc_mask, 
+	[SYS_get_pending] = sys_get_pending, 
+	[SYS_set_sig_entry] = sys_set_sig_entry, 
+	[SYS_set_sig_trapframe] = sys_set_sig_trapframe, 
 };
 
 /* Overview:

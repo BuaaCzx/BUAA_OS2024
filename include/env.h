@@ -86,7 +86,7 @@ struct Env {
 	当一个信号被设置在信号掩码中时，该信号不会立即传递给进程，直到从掩码中清除或进程特地检查并处理这些被阻塞的信号。
 	*/
 	struct Sig_list env_sig_list; // 接收到的信号队列
-	struct sigset_t env_mask_list[305]; // 掩码栈
+	struct sigset_t env_mask_list[55]; // 掩码栈
 	int env_mask_cnt;
 	u_int env_sig_entry; // sig handler
 	int env_cur_sig;

@@ -153,7 +153,7 @@ int sigprocmask(int __how, const sigset_t * __set, sigset_t * __oset);
 int sigpending(sigset_t *__set);
 // 获取当前被阻塞且未处理的信号集，并将其存储在__set中。
 
-static void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, void (*sa_handler)(int), int signum, int envid);
+void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, void (*sa_handler)(int), int signum, int envid);
 // 异常处理函数
 
 

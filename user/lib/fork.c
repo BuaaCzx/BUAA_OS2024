@@ -54,7 +54,7 @@ static void __attribute__((noreturn)) cow_entry(struct Trapframe *tf) {
 }
 
 // challenge
-static void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, void (*sa_handler)(int), int signum, int envid) {
+void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, void (*sa_handler)(int), int signum, int envid) {
     if (sa_handler != 0) {
         sa_handler(signum); // 直接调用定义好的处理函数
         int r = syscall_set_sig_trapframe(0, tf);

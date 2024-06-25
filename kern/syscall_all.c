@@ -588,7 +588,7 @@ int sys_sigaction(u_int envid, int signum, const struct sigaction *newact, struc
 	}
 	if (newact) {
 		if (signum == SIGKILL) { // 不修改处理函数
-			e->env_sigactions[signum].sig = newact->sig;
+			e->env_sigactions[signum].sa_mask = newact->sa_mask;
 		} else {
 			e->env_sigactions[signum] = *newact;
 		}

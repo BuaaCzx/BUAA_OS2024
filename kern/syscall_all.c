@@ -584,6 +584,18 @@ int sys_kill(u_int envid, int sig) {
 	return 0;
 }
 
+static sigset_t sigs[1005];
+static int sigs_cnt;
+
+int sys_kill(u_int envid, int sig){
+	struct Env *e;
+	try(envid2env(envid, &e, 0));
+	sigs[sigs_cnt].sig = sig;
+	TAILQ_INSERT_TAIL(&env_sig_list, sigs + sigs_cnt, sig_link);
+	sigs_cnt = (sigs_cnt + 1) % 1000;
+	return 0;
+}
+
 int sys_proc_mask(int __how, const sigset_t * __set, sigset_t * __oset) {
 	struct Env *e;
 	try(envid2env(envid, &e, 0));

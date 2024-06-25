@@ -594,6 +594,30 @@ int sys_kill(u_int envid, int sig) {
 	sigs[sigs_cnt].sig = sig;
 	TAILQ_INSERT_TAIL(&e->env_sig_list, sigs + sigs_cnt, sig_link);
 	sigs_cnt = (sigs_cnt + 1) % 1000;
+
+	struct sigset_t *ss;
+	TAILQ_FOREACH(ss, &curenv->env_sig_list, sig_link) {
+		if(ss->sig == SIGKILL) { // 如果有 SIGKILL，优先处理
+			sig_todo = ss;
+			break;
+		}
+		u_int cur_mask = curenv->env_mask_list[curenv->env_mask_cnt].sig;
+		if(!((cur_mask >> (ss->sig)) & 1)) { // 如果信号未被屏蔽
+			if(sig_todo == NULL) { // 如果当前还没有需要处理的信号
+				sig_todo = ss;
+			} else { // 已经有了，对比优先级
+				if(ss->sig > sig_todo->sig){
+					sig_todo = ss;
+				}
+			}
+		}
+	}
+
+	if (!ss) {
+		printk("not insert!\n")
+	} else {
+		printk("kill success!\n");
+	}
 	return 0;
 }
 

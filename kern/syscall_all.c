@@ -287,6 +287,7 @@ int sys_exofork(void) {
 	}
 	e->env_cur_sig = curenv->env_cur_sig;
 	e->env_mask_cnt = curenv->env_mask_cnt;
+	e->env_sig_entry = curenv->env_sig_entry;
 	for(int i = 0; i <= e->env_mask_cnt; i++) {
 		e->env_mask_list[i] = curenv->env_mask_list[i];
 	}

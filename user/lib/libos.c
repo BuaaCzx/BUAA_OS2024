@@ -18,10 +18,10 @@ extern int main(int, char **);
 void libmain(int argc, char **argv) {
 	// set env to point at our env structure in envs[].
 	env = &envs[ENVX(syscall_getenvid())];
-
+	syscall_set_sig_entry(syscall_getenvid(), sig_entry);
 	// call user main routine
 	main(argc, argv);
-
+	
 	// exit gracefully
 	exit();
 }

@@ -81,7 +81,11 @@ void _do_tlb_refill(u_long *pentrylo, u_int va, u_int asid) {
 	pentrylo[1] = ppte[1] >> 6;
 }
 
-void do_signal(struct Trapframe *tf){
+void do_signal(struct Trapframe *tf) {
+
+	if (curenv->env_cur_sig == SIGKILL) {
+		return;
+	}
 
 	struct sigset_t *sig_todo = NULL; // 将要处理的信号
 
@@ -115,6 +119,8 @@ void do_signal(struct Trapframe *tf){
 	u_int mask = curenv->env_mask_list[curenv->env_mask_cnt].sig | curenv->env_sigactions[sig_todo->sig].sa_mask.sig | (1 << (sig_todo->sig - 1));
 	curenv->env_mask_cnt++;
 	curenv->env_mask_list[curenv->env_mask_cnt].sig = mask;
+
+	curenv->env_cur_sig = sig_todo->sig;
 
 	struct Trapframe tmp_tf = *tf;
 

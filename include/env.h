@@ -89,6 +89,7 @@ struct Env {
 	struct sigset_t env_mask_list[305]; // 掩码栈
 	int env_mask_cnt;
 	u_int env_sig_entry; // sig handler
+	int env_cur_sig;
 
 };
 

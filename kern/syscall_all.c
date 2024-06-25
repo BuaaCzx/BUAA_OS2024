@@ -283,6 +283,14 @@ int sys_exofork(void) {
 	e->env_status = ENV_NOT_RUNNABLE;
 	e->env_pri = curenv->env_pri;
 
+	for(int i = 1;i <= 32; i++){
+		e->env_sigactions[i] = curenv->env_sigactions[i];
+	}
+	e->env_cur_sig = curenv->env_cur_sig;
+	e->env_mask_cnt = curenv->env_mask_cnt;
+	for(int i = 0; i <= e->env_mask_cnt; i++) {
+		e->env_mask_list[i] = curenv->env_mask_list[i];
+	}
 	return e->env_id;
 }
 
@@ -644,6 +652,7 @@ int sys_set_sig_trapframe(u_int envid, struct Trapframe *tf){
 	struct Env *e;
 	try(envid2env(envid, &e, 0));
 	e->env_mask_cnt--;
+	e->env_cur_sig = 0;
 	if(e == curenv){
 		*((struct Trapframe *)KSTACKTOP -1) = *tf;
 		return tf->regs[2];

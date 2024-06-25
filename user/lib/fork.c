@@ -155,6 +155,10 @@ int fork(void) {
 		try(syscall_set_tlb_mod_entry(0, cow_entry));
 	}
 
+	if (env->env_sig_entry != (u_int)sig_entry) {
+		try(syscall_set_sig_entry(0, sig_entry));
+	}
+
 	/* Step 2: Create a child env that's not ready to be scheduled. */
 	// Hint: 'env' should always point to the current env itself, so we should fix it to the
 	// correct value.
@@ -181,8 +185,8 @@ int fork(void) {
 	 */
 	/* Exercise 4.15: Your code here. (2/2) */
 	try(syscall_set_tlb_mod_entry(child, cow_entry));
-
 	try(syscall_set_env_status(child, ENV_RUNNABLE));
+	try(syscall_set_sig_entry(child, sig_entry));
 
 	return child;
 }

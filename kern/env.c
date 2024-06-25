@@ -376,6 +376,7 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	TAILQ_INIT(&e->env_sig_list);
 	e->env_mask_cnt = 0;
 	e->env_sig_entry = 0;
+	e->env_cur_sig = 0;
 
 	/* Step 5: Remove the new Env from env_free_list. */
 	/* Exercise 3.4: Your code here. (4/4) */
